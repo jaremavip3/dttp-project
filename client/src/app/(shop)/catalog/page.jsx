@@ -3,6 +3,7 @@
 import Header from "@/components/Header";
 import Grid, { GridItem } from "@/components/Grid";
 import SearchInput from "@/components/SearchInput";
+import { products } from "@/data/products";
 import { useFilters } from "./layout";
 
 export default function CatalogPage() {
@@ -14,7 +15,7 @@ export default function CatalogPage() {
       <div className="px-4">
         <SearchInput
           onSearch={handleSearch}
-          placeholder="Search for products (e.g., 'warm jacket', 'casual outfit', 'winter clothes')..."
+          placeholder="Search products..."
           isLoading={isClipSearching}
           error={clipError}
         />
@@ -26,6 +27,9 @@ export default function CatalogPage() {
               for "{searchQuery}"
               {clipResults.length > 0 && <span className="ml-1 text-green-600">(AI-powered results)</span>}
             </span>
+          )}
+          {filteredProducts.length > 0 && filteredProducts.length < 10 && (
+            <span className="ml-2 text-gray-500">(filtered from {products.length} total)</span>
           )}
         </div>
 

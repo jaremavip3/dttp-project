@@ -14,8 +14,27 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Your Website",
-  description: "A minimal website template",
+  title: {
+    default: "StyleAI - AI-Powered Fashion Discovery",
+    template: "%s | StyleAI",
+  },
+  description:
+    "Discover fashion with AI-powered semantic search. Find exactly what you're looking for with natural language search.",
+  keywords: "fashion, AI search, clothing, e-commerce, style, CLIP, semantic search",
+  authors: [{ name: "StyleAI Team" }],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://styleai.com",
+    title: "StyleAI - AI-Powered Fashion Discovery",
+    description:
+      "Discover fashion with AI-powered semantic search. Find exactly what you're looking for with natural language search.",
+    siteName: "StyleAI",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({ children }) {

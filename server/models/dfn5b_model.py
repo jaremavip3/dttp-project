@@ -16,7 +16,7 @@ class DFN5BModelManager(BaseModelManager):
     """Manager for Apple DFN5B model"""
 
     def __init__(self):
-        super().__init__(model_name="DFN5B", cache_file="dfn5b_embeddings.json")
+        super().__init__(model_name="dfn5b", cache_file="dfn5b_embeddings.json")
 
     async def load_model(self):
         """Load DFN5B model"""

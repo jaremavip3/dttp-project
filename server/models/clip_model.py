@@ -16,7 +16,7 @@ class CLIPModelManager(BaseModelManager):
     """Manager for OpenAI CLIP model"""
 
     def __init__(self):
-        super().__init__(model_name="CLIP", cache_file="clip_embeddings.json")
+        super().__init__(model_name="clip", cache_file="clip_embeddings.json")
         self.processor = None
 
     async def load_model(self):

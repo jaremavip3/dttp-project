@@ -18,6 +18,9 @@ export default function CatalogPage() {
     selectedModel,
     lastSearchModel,
     handleModelChange,
+    products,
+    isLoadingProducts,
+    productsError,
   } = useFilters();
 
   return (
@@ -36,6 +39,22 @@ export default function CatalogPage() {
           error={clipError}
         />
 
+        {/* Loading state for products */}
+        {isLoadingProducts && (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading products from database...</p>
+          </div>
+        )}
+
+        {/* Error state for products */}
+        {productsError && (
+          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-yellow-700">⚠️ Failed to load products from database: {productsError}</p>
+            <p className="text-yellow-600 text-sm mt-2">Using fallback products. Check server connection.</p>
+          </div>
+        )}
+
         <div className="mb-4 text-sm text-gray-600">
           Showing {filteredProducts.length} products
           {searchQuery && (
@@ -46,9 +65,10 @@ export default function CatalogPage() {
               )}
             </span>
           )}
-          {filteredProducts.length > 0 && filteredProducts.length < 10 && (
+          {filteredProducts.length > 0 && filteredProducts.length < products.length && (
             <span className="ml-2 text-gray-500">(filtered from {products.length} total)</span>
           )}
+          {!isLoadingProducts && <span className="ml-2 text-green-600">📊 Database: {products.length} items</span>}
         </div>
 
         <Grid>

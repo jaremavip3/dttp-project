@@ -16,7 +16,7 @@ class EVA02ModelManager(BaseModelManager):
     """Manager for EVA02 model"""
 
     def __init__(self):
-        super().__init__(model_name="EVA02", cache_file="eva02_embeddings.json")
+        super().__init__(model_name="eva02", cache_file="eva02_embeddings.json")
 
     async def load_model(self):
         """Load EVA02 model"""

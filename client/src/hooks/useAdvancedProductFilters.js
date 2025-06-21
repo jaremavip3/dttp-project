@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { products } from "@/data/products";
+import { useState, useMemo, useEffect } from "react";
+import { products as fallbackProducts } from "@/data/products";
 import { ClipService } from "@/services/clipService";
+import ProductService from "@/services/productService";
 
 export function useAdvancedProductFilters() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -12,6 +13,39 @@ export function useAdvancedProductFilters() {
   const [activeFilters, setActiveFilters] = useState([]);
   const [selectedModel, setSelectedModel] = useState("EVA02");
   const [lastSearchModel, setLastSearchModel] = useState(null);
+
+  // New state for database products
+  const [products, setProducts] = useState(fallbackProducts);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [productsError, setProductsError] = useState(null);
+
+  // Load products from API on mount
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setIsLoadingProducts(true);
+        setProductsError(null);
+
+        // Fetch all products from the database
+        const apiProducts = await ProductService.fetchAllProducts({ maxItems: 500 });
+
+        // Convert to client format
+        const clientProducts = apiProducts.map(ProductService.convertToClientProduct);
+
+        setProducts(clientProducts);
+        console.log(`✅ Loaded ${clientProducts.length} products from database`);
+      } catch (error) {
+        console.error("Failed to load products from API:", error);
+        setProductsError(error.message);
+        // Keep using fallback products
+        console.log("📦 Using fallback products");
+      } finally {
+        setIsLoadingProducts(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
 
   const handleSearch = async (query) => {
     setSearchQuery(query);
@@ -148,7 +182,7 @@ export function useAdvancedProductFilters() {
 
       return textSearchMatch && advancedFilterMatch;
     });
-  }, [searchQuery, clipResults, activeFilters]);
+  }, [searchQuery, clipResults, activeFilters, products]);
 
   return {
     searchQuery,
@@ -162,5 +196,9 @@ export function useAdvancedProductFilters() {
     handleSearch,
     handleFilterSelect,
     handleModelChange,
+    // New properties for database products
+    products,
+    isLoadingProducts,
+    productsError,
   };
 }

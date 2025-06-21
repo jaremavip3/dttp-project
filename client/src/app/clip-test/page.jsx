@@ -88,7 +88,11 @@ export default function ClipTestPage() {
             {results.results.map((result, index) => (
               <div key={index} className="border border-gray-200 rounded-lg p-4">
                 <div className="aspect-square bg-gray-100 rounded mb-3 flex items-center justify-center overflow-hidden">
-                  <img src={`/test_images/${result.image}`} alt={result.image} className="w-full h-full object-cover" />
+                  <img
+                    src={`http://localhost:8000/images/${result.image}`}
+                    alt={result.image}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="text-center">
                   <p className="font-medium text-gray-900">{result.image}</p>

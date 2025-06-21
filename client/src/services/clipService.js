@@ -1,5 +1,5 @@
 // AI Search Service for the unified multi-model server
-const UNIFIED_SERVER_URL = "http://localhost:5000";
+const UNIFIED_SERVER_URL = "http://localhost:8000";
 
 // Available AI models (all served from unified server)
 export const AI_MODELS = {
@@ -147,37 +147,188 @@ export class ClipService {
    * @param {Array} products - Array of product objects
    * @param {string} model - The model to use (e.g., 'CLIP', 'EVA02', 'DFN5B')
    * @param {number} topK - Number of top results to return
-   * @returns {Promise<Array>} Array of products with similarity scores
+  /**
+   * Search for products using AI models - optimized version using dedicated product search endpoint
+   * @param {string} query - The search query text
+   * @param {string} model - The model to use (e.g., 'CLIP', 'EVA02', 'DFN5B')
+   * @param {number} topK - Number of top results to return
+   * @returns {Promise<Object>} Search results with products
    */
-  static async searchProducts(query, products, model = "CLIP", topK = 10) {
+  static async searchProductsV2(query, model = "CLIP", topK = 10) {
     try {
-      const clipResults = await this.searchImages(query, model, topK);
+      const modelConfig = AI_MODELS[model];
+      if (!modelConfig) {
+        throw new Error(`Unknown model: ${model}. Available models: ${Object.keys(AI_MODELS).join(", ")}`);
+      }
 
-      const productsWithScores = clipResults.results
-        .map((result) => {
-          const productId = this.mapImageToProductId(result.image);
-          const product = products.find((p) => p.id === productId);
+      // Use the new dedicated product search endpoint
+      const response = await fetch(`${UNIFIED_SERVER_URL}/search-products`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: query,
+          model: model.toLowerCase(),
+          top_k: topK,
+        }),
+      });
 
-          if (product) {
-            return {
-              ...product,
-              similarityScore: result.similarity,
-              clipImage: result.image,
-            };
-          }
-          return null;
-        })
-        .filter(Boolean); // Remove null entries
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          `Product search failed: ${response.status} ${response.statusText} - ${errorData.detail || "Unknown error"}`
+        );
+      }
+
+      const data = await response.json();
+
+      // Convert server response to client format
+      const products = data.products.map((product) => ({
+        id: product.id,
+        name: product.name,
+        filename: product.filename,
+        image: product.image_url, // Use the image_url directly (points to Supabase Storage)
+        category: product.category || "general",
+        subcategory: product.category || "general",
+        gender: "unisex",
+        tags: [
+          product.category || "general",
+          product.split || "unknown",
+          ...(product.metadata && product.metadata.source ? [product.metadata.source] : []),
+        ].filter(Boolean),
+        description: `${product.category || "Item"} from ${product.split || "dataset"} dataset`,
+        isNew: product.split === "train",
+        isOnSale: false,
+        isBestSeller: false,
+        price: 29.99,
+        similarityScore: product.similarity_score,
+        searchRank: product.search_rank,
+        metadata: product.metadata,
+      }));
 
       return {
-        query: clipResults.query,
-        products: productsWithScores,
-        totalImages: clipResults.total_images,
+        query: data.query,
+        products: products,
+        totalImages: data.total_results,
         model: model,
-        modelInfo: clipResults.model_info || AI_MODELS[model].name,
+        modelInfo: data.model || AI_MODELS[model].name,
       };
     } catch (error) {
       console.error(`Error searching products with ${model}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Search for products using selected AI model (legacy method - kept for backward compatibility)
+   * @param {string} query - The search query text
+   * @param {Array} products - Local products array (ignored in new version)
+   * @param {string} model - The model to use (e.g., 'CLIP', 'EVA02', 'DFN5B')
+   * @param {number} topK - Number of top results to return
+   * @returns {Promise<Array>} Array of products with similarity scores
+   */
+  static async searchProducts(query, products, model = "CLIP", topK = 10) {
+    // Use the new database-backed search method
+    return this.searchProductsV2(query, model, topK);
+  }
+
+  /**
+   * Upload an image to the server and generate embeddings
+   * @param {File} imageFile - The image file to upload
+   * @param {Array<string>} models - Models to generate embeddings for (optional)
+   * @returns {Promise<Object>} Upload response
+   */
+  static async uploadImage(imageFile, models = null) {
+    try {
+      const formData = new FormData();
+      formData.append("file", imageFile);
+
+      if (models && models.length > 0) {
+        formData.append("models", models.join(","));
+      }
+
+      const response = await fetch(`${UNIFIED_SERVER_URL}/images/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get list of all images in the database
+   * @param {number} limit - Number of images to return
+   * @param {number} offset - Offset for pagination
+   * @returns {Promise<Object>} List of images
+   */
+  static async getImages(limit = 100, offset = 0) {
+    try {
+      const response = await fetch(`${UNIFIED_SERVER_URL}/images?limit=${limit}&offset=${offset}`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error getting images:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get database statistics
+   * @returns {Promise<Object>} Database statistics
+   */
+  static async getDatabaseStats() {
+    try {
+      const response = await fetch(`${UNIFIED_SERVER_URL}/database/stats`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error getting database stats:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate embeddings for all images using a specific model
+   * @param {string} model - The model to use
+   * @param {boolean} forceRegenerate - Whether to regenerate existing embeddings
+   * @returns {Promise<Object>} Generation status
+   */
+  static async generateEmbeddings(model, forceRegenerate = false) {
+    try {
+      const response = await fetch(`${UNIFIED_SERVER_URL}/embeddings/generate/${model}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          force_regenerate: forceRegenerate,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`Error generating embeddings for ${model}:`, error);
       throw error;
     }
   }

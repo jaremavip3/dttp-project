@@ -39,8 +39,8 @@ export function GridItem({ product }) {
         <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">{product.name}</h3>
         <p className="text-gray-600 font-semibold">${product.price}</p>
         <div className="mt-2 flex flex-wrap gap-1">
-          {product.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+          {product.tags.slice(0, 3).map((tag, index) => (
+            <span key={`${product.id}-tag-${index}`} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
               {tag}
             </span>
           ))}

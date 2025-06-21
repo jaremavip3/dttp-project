@@ -5,10 +5,9 @@ import Link from "next/link";
 export default function Footer() {
   const footerLinks = {
     Shop: [
-      { name: "Women", href: "/catalog?filter=women" },
-      { name: "Men", href: "/catalog?filter=men" },
+      { name: "Best Sellers", href: "/catalog?filter=best-sellers" },
       { name: "New Arrivals", href: "/catalog?filter=new" },
-      { name: "Sale", href: "/catalog?filter=sale" },
+      { name: "All Products", href: "/catalog" },
     ],
     Support: [
       { name: "Contact Us", href: "/contact" },

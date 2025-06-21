@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { products as fallbackProducts } from "@/data/products";
-import { ClipService } from "@/services/clipService";
+import ClipService from "@/services/clipService";
 import ProductService from "@/services/productService";
 
 export function useAdvancedProductFilters() {
@@ -33,12 +33,15 @@ export function useAdvancedProductFilters() {
         const clientProducts = apiProducts.map(ProductService.convertToClientProduct);
 
         setProducts(clientProducts);
-        console.log(`✅ Loaded ${clientProducts.length} products from database`);
       } catch (error) {
         console.error("Failed to load products from API:", error);
         setProductsError(error.message);
-        // Keep using fallback products
-        console.log("📦 Using fallback products");
+        // Show a user-friendly error message
+        if (error.message.includes('Unable to connect to server')) {
+          setProductsError('Unable to connect to the API server. Please ensure it is running on port 8000.');
+        } else {
+          setProductsError(error.message);
+        }
       } finally {
         setIsLoadingProducts(false);
       }
@@ -59,7 +62,11 @@ export function useAdvancedProductFilters() {
         setLastSearchModel(selectedModel);
       } catch (error) {
         console.error(`${selectedModel} search failed:`, error);
-        setClipError(`${selectedModel} search unavailable - using text search instead`);
+        if (error.message.includes('Unable to connect to')) {
+          setClipError(`AI search server is not available. Please ensure the server is running on port 8000.`);
+        } else {
+          setClipError(`${selectedModel} search unavailable - using text search instead`);
+        }
         setClipResults([]);
         setLastSearchModel(null);
       } finally {

@@ -1,5 +1,8 @@
 // AI Search Service for the unified multi-model server
-const UNIFIED_SERVER_URL = "http://localhost:8000";
+// Enhanced with Next.js native caching strategies
+import { CacheManager, CACHE_TYPES } from '@/utils/cache';
+
+const UNIFIED_SERVER_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 // Available AI models (all served from unified server)
 export const AI_MODELS = {
@@ -23,22 +26,38 @@ export const AI_MODELS = {
   },
 };
 
-export class ClipService {
+class ClipService {
   /**
-   * Search for products using selected AI model
+   * Search for products using selected AI model with Next.js caching
    * @param {string} query - The search query text
    * @param {string} model - The model to use (e.g., 'CLIP', 'EVA02', 'DFN5B')
    * @param {number} topK - Number of top results to return
+   * @param {boolean} useClientCache - Whether to use client-side cache (default: true)
    * @returns {Promise<Array>} Array of search results with similarity scores
    */
-  static async searchImages(query, model = "CLIP", topK = 10) {
+  static async searchImages(query, model = "CLIP", topK = 10, useClientCache = true) {
     const modelConfig = AI_MODELS[model];
     if (!modelConfig) {
       throw new Error(`Unknown model: ${model}. Available models: ${Object.keys(AI_MODELS).join(", ")}`);
     }
 
+    // Generate cache key for client-side cache
+    const cacheKey = CacheManager.generateSearchKey(query, model, { topK });
+    
+    // Try to get from client-side cache first (faster for repeated searches)
+    if (useClientCache && CacheManager.isAvailable()) {
+      const cached = CacheManager.get(CACHE_TYPES.SEARCH_RESULTS, cacheKey);
+      if (cached) {
+        return {
+          ...cached,
+          fromCache: true,
+          cacheType: 'client'
+        };
+      }
+    }
+
     try {
-      // Use the unified server endpoint
+      // Use regular fetch for client-side requests
       const response = await fetch(`${modelConfig.url}${modelConfig.endpoint}`, {
         method: "POST",
         headers: {
@@ -55,10 +74,19 @@ export class ClipService {
       }
 
       const data = await response.json();
-      return {
+      const result = {
         ...data,
         model: model,
+        fromCache: false,
+        cacheType: 'none'
       };
+      
+      // Cache the result on client-side for immediate repeated access
+      if (useClientCache && CacheManager.isAvailable()) {
+        CacheManager.set(CACHE_TYPES.SEARCH_RESULTS, result, cacheKey);
+      }
+      
+      return result;
     } catch (error) {
       console.error(`Error searching with ${model}:`, error);
       throw error;
@@ -66,18 +94,19 @@ export class ClipService {
   }
 
   /**
-   * Check if specified AI server is healthy and ready
-   * @param {string} model - The model to check (e.g., 'CLIP', 'EVA02', 'DFN5B')
-   * @returns {Promise<Object>} Health check response
+   * Check server health for a specific model
+   * @param {string} model - The model to check
+   * @returns {Promise<Object>} Health status
    */
-  static async healthCheck(model = "CLIP") {
+  static async checkServerHealth(model = "CLIP") {
     const modelConfig = AI_MODELS[model];
     if (!modelConfig) {
       throw new Error(`Unknown model: ${model}`);
     }
 
     try {
-      const response = await fetch(`${modelConfig.url}/health`);
+      // Use regular fetch for client-side requests
+      const response = await fetch(`${modelConfig.url}/health/${model.toLowerCase()}`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -91,77 +120,74 @@ export class ClipService {
   }
 
   /**
-   * Check health of all available models
-   * @returns {Promise<Object>} Health status for all models
+   * Get all server health statuses
+   * @returns {Promise<Object>} Health status for all models (transformed to object format)
    */
-  static async checkAllModels() {
-    const results = {};
+  static async getAllHealthStatuses() {
+    try {
+      // Use regular fetch for client-side requests
+      const response = await fetch(`${UNIFIED_SERVER_URL}/health`);
 
-    for (const [modelKey, modelConfig] of Object.entries(AI_MODELS)) {
-      try {
-        const health = await this.healthCheck(modelKey);
-        results[modelKey] = {
-          status: "healthy",
-          ...health,
-          name: modelConfig.name,
-        };
-      } catch (error) {
-        results[modelKey] = {
-          status: "error",
-          error: error.message,
-          name: modelConfig.name,
-        };
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
+      
+      // Transform the array of models to an object format expected by ModelSelector
+      const modelHealth = {};
+      
+      if (data.models && Array.isArray(data.models)) {
+        data.models.forEach(model => {
+          // Map server model names to client model names
+          let clientModelName;
+          switch (model.name.toLowerCase()) {
+            case 'clip':
+              clientModelName = 'CLIP';
+              break;
+            case 'eva02':
+              clientModelName = 'EVA02';
+              break;
+            case 'dfn5b':
+              clientModelName = 'DFN5B';
+              break;
+            default:
+              clientModelName = model.name.toUpperCase();
+          }
+          
+          modelHealth[clientModelName] = {
+            name: clientModelName,
+            status: model.status,
+            loaded: model.loaded,
+            embeddings_count: model.embeddings_count,
+            model_info: model.model_info,
+            error: model.status !== 'healthy' ? `Model ${model.status}` : null
+          };
+        });
+      }
+      
+      return modelHealth;
+    } catch (error) {
+      console.error("Error checking overall server health:", error);
+      throw error;
     }
-
-    return results;
   }
 
   /**
-   * Map image filename to product ID
-   * This helper maps the image filenames returned by CLIP to product IDs
-   * @param {string} imageFilename - The image filename from CLIP results
-   * @returns {number|null} The corresponding product ID or null if not found
-   */
-  static mapImageToProductId(imageFilename) {
-    // Map image filenames to product IDs based on our product data
-    const imageToProductMap = {
-      "cardigan.avif": 1,
-      "dress.jpeg": 2,
-      "gloves.jpeg": 3,
-      "hat.jpeg": 4,
-      "jacket.jpeg": 5,
-      "pants.jpeg": 6,
-      "seater.jpeg": 7,
-      "shirt.jpeg": 8,
-      "shoes.jpeg": 9,
-      "t-shirt.jpeg": 10,
-    };
-
-    return imageToProductMap[imageFilename] || null;
-  }
-
-  /**
-   * Search for products and return product objects with similarity scores
+   * Search for products using selected AI model and return formatted results
    * @param {string} query - The search query text
-   * @param {Array} products - Array of product objects
-   * @param {string} model - The model to use (e.g., 'CLIP', 'EVA02', 'DFN5B')
-   * @param {number} topK - Number of top results to return
-  /**
-   * Search for products using AI models - optimized version using dedicated product search endpoint
-   * @param {string} query - The search query text
-   * @param {string} model - The model to use (e.g., 'CLIP', 'EVA02', 'DFN5B')
-   * @param {number} topK - Number of top results to return
-   * @returns {Promise<Object>} Search results with products
+   * @param {string} model - The model to use
+   * @param {number} topK - Number of results
+   * @returns {Promise<Object>} Formatted search results
    */
   static async searchProductsV2(query, model = "CLIP", topK = 10) {
     try {
-      const modelConfig = AI_MODELS[model];
-      if (!modelConfig) {
-        throw new Error(`Unknown model: ${model}. Available models: ${Object.keys(AI_MODELS).join(", ")}`);
-      }
-
-      // Use the new dedicated product search endpoint
+      // Convert model name to lowercase for server compatibility
+      const serverModel = model.toLowerCase();
+      
+      console.log(`🔍 Searching products with ${model}:`, { query, serverModel, topK });
+      
+      // Use regular fetch for client-side requests
       const response = await fetch(`${UNIFIED_SERVER_URL}/search-products`, {
         method: "POST",
         headers: {
@@ -169,43 +195,36 @@ export class ClipService {
         },
         body: JSON.stringify({
           query: query,
-          model: model.toLowerCase(),
+          model: serverModel,
           top_k: topK,
         }),
       });
 
+      console.log(`📡 Response status: ${response.status}`, response.ok ? '✅' : '❌');
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          `Product search failed: ${response.status} ${response.statusText} - ${errorData.detail || "Unknown error"}`
-        );
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log(`📦 Search results:`, { 
+        query: data.query, 
+        model: data.model, 
+        productCount: data.products?.length || 0,
+        totalResults: data.total_results 
+      });
 
-      // Convert server response to client format
-      const products = data.products.map((product) => ({
-        id: product.id,
-        name: product.name,
-        filename: product.filename,
-        image: product.image_url, // Use the image_url directly (points to Supabase Storage)
-        category: product.category || "general",
-        subcategory: product.category || "general",
-        gender: "unisex",
-        tags: [
-          product.category || "general",
-          product.split || "unknown",
-          ...(product.metadata && product.metadata.source ? [product.metadata.source] : []),
-        ].filter(Boolean),
-        description: `${product.category || "Item"} from ${product.split || "dataset"} dataset`,
-        isNew: product.split === "train",
-        isOnSale: false,
-        isBestSeller: false,
-        price: 29.99,
-        similarityScore: product.similarity_score,
-        searchRank: product.search_rank,
-        metadata: product.metadata,
-      }));
+      // Convert API products to client format
+      const products = data.products?.map(product => ({
+        id: product.id || product.filename,
+        name: product.name || product.filename?.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "),
+        image: product.image_url || product.image,
+        similarity: product.similarity_score || product.similarity || product.score,
+        category: product.category,
+        tags: product.tags || [],
+        price: product.price || Math.round((Math.random() * 50 + 20) * 100) / 100,
+        description: product.description || `${product.category || "Product"} item`,
+      })) || [];
 
       return {
         query: data.query,
@@ -213,9 +232,19 @@ export class ClipService {
         totalImages: data.total_results,
         model: model,
         modelInfo: data.model || AI_MODELS[model].name,
+        fromCache: false,
+        cacheType: 'server'
       };
     } catch (error) {
       console.error(`Error searching products with ${model}:`, error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        query,
+        model,
+        serverModel: model.toLowerCase(),
+        url: `${UNIFIED_SERVER_URL}/search-products`
+      });
       throw error;
     }
   }
@@ -237,27 +266,28 @@ export class ClipService {
    * Upload an image to the server and generate embeddings
    * @param {File} imageFile - The image file to upload
    * @param {Array<string>} models - Models to generate embeddings for (optional)
-   * @returns {Promise<Object>} Upload response
+   * @returns {Promise<Object>} Upload result with embeddings
    */
-  static async uploadImage(imageFile, models = null) {
+  static async uploadImage(imageFile, models = ["CLIP"]) {
     try {
       const formData = new FormData();
-      formData.append("file", imageFile);
+      formData.append("image", imageFile);
+      formData.append("models", JSON.stringify(models));
 
-      if (models && models.length > 0) {
-        formData.append("models", models.join(","));
-      }
-
-      const response = await fetch(`${UNIFIED_SERVER_URL}/images/upload`, {
+      // Don't cache upload requests
+      const response = await fetch(`${UNIFIED_SERVER_URL}/upload-image`, {
         method: "POST",
         body: formData,
+        // No caching for uploads
+        cache: 'no-store'
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      return data;
     } catch (error) {
       console.error("Error uploading image:", error);
       throw error;
@@ -265,33 +295,44 @@ export class ClipService {
   }
 
   /**
-   * Get list of all images in the database
-   * @param {number} limit - Number of images to return
-   * @param {number} offset - Offset for pagination
-   * @returns {Promise<Object>} List of images
+   * Get available images from the server
+   * @returns {Promise<Array>} Array of available images
    */
-  static async getImages(limit = 100, offset = 0) {
+  static async getImages() {
     try {
-      const response = await fetch(`${UNIFIED_SERVER_URL}/images?limit=${limit}&offset=${offset}`);
+      // Cache image list for 30 minutes (changes infrequently)
+      const response = await fetch(`${UNIFIED_SERVER_URL}/images`, {
+        next: { 
+          revalidate: 1800,
+          tags: ['images', 'image-list']
+        }
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      return data.images || [];
     } catch (error) {
       console.error("Error getting images:", error);
-      throw error;
+      return [];
     }
   }
 
   /**
    * Get database statistics
-   * @returns {Promise<Object>} Database statistics
+   * @returns {Promise<Object>} Database stats
    */
   static async getDatabaseStats() {
     try {
-      const response = await fetch(`${UNIFIED_SERVER_URL}/database/stats`);
+      // Cache stats for 5 minutes
+      const response = await fetch(`${UNIFIED_SERVER_URL}/stats`, {
+        next: { 
+          revalidate: 300,
+          tags: ['stats', 'database-stats']
+        }
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -300,26 +341,23 @@ export class ClipService {
       return await response.json();
     } catch (error) {
       console.error("Error getting database stats:", error);
-      throw error;
+      return { total_images: 0, total_embeddings: 0 };
     }
   }
 
   /**
-   * Generate embeddings for all images using a specific model
-   * @param {string} model - The model to use
-   * @param {boolean} forceRegenerate - Whether to regenerate existing embeddings
-   * @returns {Promise<Object>} Generation status
+   * Generate embeddings for all models
+   * @returns {Promise<Object>} Generation result
    */
-  static async generateEmbeddings(model, forceRegenerate = false) {
+  static async generateEmbeddings() {
     try {
-      const response = await fetch(`${UNIFIED_SERVER_URL}/embeddings/generate/${model}`, {
+      // Don't cache generation requests
+      const response = await fetch(`${UNIFIED_SERVER_URL}/generate-embeddings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          force_regenerate: forceRegenerate,
-        }),
+        cache: 'no-store'
       });
 
       if (!response.ok) {
@@ -328,8 +366,24 @@ export class ClipService {
 
       return await response.json();
     } catch (error) {
-      console.error(`Error generating embeddings for ${model}:`, error);
+      console.error(`Error generating embeddings:`, error);
       throw error;
     }
   }
+
+  /**
+   * Revalidate cache tags (for use in Server Actions)
+   * @param {Array<string>} tags - Cache tags to revalidate
+   */
+  static async revalidateCacheTags(tags) {
+    // This would be called from a Server Action
+    // Example usage: ClipService.revalidateCacheTags(['products', 'ai-search'])
+    if (typeof window === 'undefined') {
+      // Server-side only
+      const { revalidateTag } = await import('next/cache');
+      tags.forEach(tag => revalidateTag(tag));
+    }
+  }
 }
+
+export default ClipService;

@@ -21,13 +21,18 @@ export default function FeaturedProducts({ products, title = "Featured Products"
             <Link key={product.id} href={`/catalog/${product.id}`} className="group cursor-pointer">
               <div className="aspect-square relative mb-4 overflow-hidden rounded-lg bg-gray-100">
                 <Image
-                  src={product.image}
+                  src={product.image || product.image_url}
                   alt={product.name}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 {product.isNew && (
                   <span className="absolute top-3 left-3 bg-black text-white text-xs px-2 py-1 rounded">New</span>
+                )}
+                {product.isBestSeller && (
+                  <span className="absolute top-3 left-3 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                    Best Seller
+                  </span>
                 )}
                 {product.isOnSale && (
                   <span className="absolute top-3 right-3 bg-red-500 text-white text-xs px-2 py-1 rounded">Sale</span>
@@ -44,7 +49,7 @@ export default function FeaturedProducts({ products, title = "Featured Products"
                       <span className="text-red-600 font-medium">${product.price}</span>
                     </>
                   ) : (
-                    <span className="text-gray-900 font-medium">${product.price}</span>
+                    <span className="text-gray-900 font-medium">${product.price || "29.99"}</span>
                   )}
                 </div>
               </div>

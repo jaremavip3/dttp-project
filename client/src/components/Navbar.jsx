@@ -3,15 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export default function Navbar() {
+export default function TestNavbar() {
   const pathname = usePathname();
 
   const navigation = [
     { name: "Home", href: "/" },
     { name: "Catalog", href: "/catalog" },
-    { name: "Women", href: "/catalog?filter=women" },
-    { name: "Men", href: "/catalog?filter=men" },
-    { name: "Sale", href: "/catalog?filter=sale" },
   ];
 
   return (

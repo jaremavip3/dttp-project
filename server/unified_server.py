@@ -23,7 +23,7 @@ import io
 from models.clip_model import CLIPModelManager
 from models.eva02_model import EVA02ModelManager
 from models.dfn5b_model import DFN5BModelManager
-from core.config import settings
+from core.config import Settings
 from core.logging_config import setup_logging
 from core.database import (
     get_async_session,
@@ -34,6 +34,9 @@ from core.database import (
 from core.db_service import DatabaseService
 from core.models import Image as DBImage
 from sqlalchemy import select, func
+
+# Initialize settings
+settings = Settings()
 
 # Setup logging
 setup_logging()
@@ -1079,4 +1082,4 @@ async def get_categories():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=settings.HOST, port=settings.PORT)

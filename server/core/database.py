@@ -14,16 +14,34 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Supabase configuration
-SUPABASE_URL = "https://owtqoapmmmupfmhyhsuz.supabase.co"
-SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93dHFvYXBtbW11cGZtaHloc3V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1MTExMjAsImV4cCI6MjA2NjA4NzEyMH0.rmLrM3dogpwXKPo5K-M_Sq1PSTNsigGu2Ntby6v0zOk"
-SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93dHFvYXBtbW11cGZtaHloc3V6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDUxMTEyMCwiZXhwIjoyMDY2MDg3MTIwfQ.7M5bqcV_bjHv0fe9sD4dZGyroqlTYJnkch3u7cspPvE"
+# Supabase configuration from environment variables
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 
-# Database connection using direct URI (recommended for persistent applications)
-DATABASE_URL = "postgresql+asyncpg://postgres:0012ACRacr@db.owtqoapmmmupfmhyhsuz.supabase.co:5432/postgres"
-DIRECT_DB_URL = (
-    "postgresql://postgres:0012ACRacr@db.owtqoapmmmupfmhyhsuz.supabase.co:5432/postgres"
-)
+# Database configuration from environment variables
+DATABASE_HOST = os.getenv("DATABASE_HOST")
+DATABASE_PORT = os.getenv("DATABASE_PORT", "5432")
+DATABASE_USER = os.getenv("DATABASE_USER", "postgres")
+DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
+DATABASE_NAME = os.getenv("DATABASE_NAME", "postgres")
+
+# Validate required environment variables
+required_vars = [
+    ("SUPABASE_URL", SUPABASE_URL),
+    ("SUPABASE_ANON_KEY", SUPABASE_ANON_KEY),
+    ("SUPABASE_SERVICE_KEY", SUPABASE_SERVICE_KEY),
+    ("DATABASE_HOST", DATABASE_HOST),
+    ("DATABASE_PASSWORD", DATABASE_PASSWORD),
+]
+
+missing_vars = [var_name for var_name, var_value in required_vars if not var_value]
+if missing_vars:
+    raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
+
+# Construct database URLs
+DATABASE_URL = f"postgresql+asyncpg://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
+DIRECT_DB_URL = f"postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
 
 # SQLAlchemy setup
 engine = create_async_engine(

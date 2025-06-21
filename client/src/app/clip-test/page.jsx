@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ClipService, AI_MODELS } from "@/services/clipService";
+import { AI_MODELS } from "@/services/clipService";
+import ClipService from "@/services/clipService";
 import ModelSelector from "@/components/ModelSelector";
 
 export default function ClipTestPage() {

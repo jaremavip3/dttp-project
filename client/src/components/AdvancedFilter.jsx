@@ -16,6 +16,21 @@ export default function AdvancedFilter({ onFilterSelect, activeFilters = [] }) {
     "men-clothing": true,
   });
 
+  // Safety check for SSR
+  if (!filterStructure || typeof filterStructure !== 'object') {
+    return (
+      <div className="w-80 bg-white border-r border-gray-200 h-screen sticky top-0 overflow-hidden">
+        <div className="p-4">
+          <div className="text-center py-8">
+            <div className="animate-pulse bg-gray-200 h-4 rounded mb-2"></div>
+            <div className="animate-pulse bg-gray-200 h-4 rounded mb-2"></div>
+            <div className="animate-pulse bg-gray-200 h-4 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const toggleSection = (sectionId) => {
     setOpenSections((prev) => ({
       ...prev,
@@ -36,7 +51,7 @@ export default function AdvancedFilter({ onFilterSelect, activeFilters = [] }) {
       {/* Filter Navigation */}
       <div className="border-b border-gray-200 bg-white p-2">
         <div className="space-y-1">
-          {Object.entries(filterStructure).map(([key, category]) => (
+          {filterStructure && Object.entries(filterStructure).map(([key, category]) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
@@ -55,7 +70,7 @@ export default function AdvancedFilter({ onFilterSelect, activeFilters = [] }) {
 
       {/* Filter Content */}
       <div className="p-4 max-h-[calc(100vh-280px)] overflow-y-auto">
-        {filterStructure[activeTab] && (
+        {filterStructure && filterStructure[activeTab] && filterStructure[activeTab].sections && (
           <div className="space-y-4">
             {Object.entries(filterStructure[activeTab].sections).map(([sectionKey, section]) => (
               <div key={sectionKey} className="border border-gray-200 rounded-lg">

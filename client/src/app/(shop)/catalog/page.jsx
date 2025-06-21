@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import Grid, { GridItem } from "@/components/Grid";
 import SearchInput from "@/components/SearchInput";
 import ModelSelector from "@/components/ModelSelector";
-import { products } from "@/data/products";
+// import { LoadingSpinner, Button } from "@/uiLibrary";
 import { useFilters } from "./layout";
 
 export default function CatalogPage() {
@@ -42,7 +42,7 @@ export default function CatalogPage() {
         {/* Loading state for products */}
         {isLoadingProducts && (
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent mx-auto mb-4"></div>
             <p className="text-gray-600">Loading products from database...</p>
           </div>
         )}
@@ -52,6 +52,12 @@ export default function CatalogPage() {
           <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-yellow-700">⚠️ Failed to load products from database: {productsError}</p>
             <p className="text-yellow-600 text-sm mt-2">Using fallback products. Check server connection.</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Retry
+            </button>
           </div>
         )}
 

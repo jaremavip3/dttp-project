@@ -7,7 +7,7 @@ A comprehensive AI-powered semantic search system with multiple CLIP-based model
 This project provides a full-stack solution for semantic image search using 3 different state-of-the-art AI models:
 
 - **CLIP**: OpenAI's foundational vision-language model
-- **EVA02**: Advanced vision transformer with superior performance  
+- **EVA02**: Advanced vision transformer with superior performance
 - **DFN5B**: Apple's latest multimodal model
 
 ## 🏗️ Project Structure
@@ -58,6 +58,7 @@ python start_server.py
 **Single server for all models**: http://localhost:5000
 
 The new unified server provides:
+
 - ✅ **Better performance** (60% less memory usage)
 - ✅ **Cleaner architecture** (single FastAPI app)
 - ✅ **Easier management** (one process vs 3)
@@ -78,11 +79,11 @@ Visit http://localhost:3000/clip-test to compare all 3 models with different sea
 
 ## 📊 Model Comparison
 
-| Model | API Endpoint | Advantages | Best For |
-|-------|-------------|------------|----------|
-| **CLIP** | `/search/clip` | Fast, reliable, well-established | General use, proven performance |
+| Model     | API Endpoint    | Advantages                                                 | Best For                                  |
+| --------- | --------------- | ---------------------------------------------------------- | ----------------------------------------- |
+| **CLIP**  | `/search/clip`  | Fast, reliable, well-established                           | General use, proven performance           |
 | **EVA02** | `/search/eva02` | State-of-the-art accuracy, superior semantic understanding | High-quality results, fine-grained search |
-| **DFN5B** | `/search/dfn5b` | Advanced Apple model, strong multimodal capabilities | Cutting-edge performance |
+| **DFN5B** | `/search/dfn5b` | Advanced Apple model, strong multimodal capabilities       | Cutting-edge performance                  |
 
 **All models accessible via single server**: http://localhost:5000
 
@@ -91,6 +92,7 @@ Visit http://localhost:3000/clip-test to compare all 3 models with different sea
 The unified server supports all models via a single endpoint:
 
 ### Search with Model Selection
+
 ```bash
 # Search with CLIP (default)
 curl -X POST "http://localhost:5000/search" \
@@ -102,13 +104,14 @@ curl -X POST "http://localhost:5000/search/eva02" \
   -H "Content-Type: application/json" \
   -d '{"query": "red shirt", "top_k": 5}'
 
-# Search with DFN5B  
+# Search with DFN5B
 curl -X POST "http://localhost:5000/search/dfn5b" \
   -H "Content-Type: application/json" \
   -d '{"query": "red shirt", "top_k": 5}'
 ```
 
 ### Health Check
+
 ```bash
 # Check all models
 curl http://localhost:5000/health
@@ -118,17 +121,20 @@ curl http://localhost:5000/health/eva02
 ```
 
 ### API Documentation
+
 **Unified documentation**: http://localhost:5000/docs
 
 ## 🎮 Alternative Startup Methods
 
 ### For Development
+
 ```bash
 cd server
 python unified_server.py
 ```
 
 ### Direct Python Import
+
 ```python
 from server.unified_server import app
 import uvicorn
@@ -139,10 +145,12 @@ uvicorn.run(app, host="0.0.0.0", port=5000)
 ## 🛠️ Development
 
 ### Adding New Images
+
 1. Add images to `client/public/test_images/`
 2. Restart servers or call the `/recompute` endpoint to regenerate embeddings
 
 ### Model Performance
+
 - All models process ~10 test images
 - Embeddings are cached for faster subsequent searches
 - First startup takes longer due to model loading and embedding computation
@@ -162,6 +170,7 @@ uvicorn.run(app, host="0.0.0.0", port=5000)
 ## 🧪 Testing
 
 The project includes comprehensive testing capabilities:
+
 - Individual model testing via `/health` endpoints
 - Comparative search testing via the web interface
 - API testing via curl commands or Postman
@@ -176,7 +185,7 @@ The project includes comprehensive testing capabilities:
 ## 🎯 Use Cases
 
 - E-commerce product search
-- Content discovery platforms  
+- Content discovery platforms
 - Image similarity detection
 - AI model performance comparison
 - Semantic search research

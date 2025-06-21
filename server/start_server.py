@@ -11,6 +11,7 @@ import logging
 # Add the server directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+
 async def main():
     """Main function to start the unified server"""
     print("🎯 Multi-Model AI Search Server v2.0")
@@ -32,25 +33,26 @@ async def main():
     try:
         import uvicorn
         from unified_server import app
-        
+
         # Run the server
         config = uvicorn.Config(
             app=app,
             host="0.0.0.0",
             port=5000,
             log_level="info",
-            reload=False  # Disable reload for production
+            reload=False,  # Disable reload for production
         )
-        
+
         server = uvicorn.Server(config)
         await server.serve()
-        
+
     except KeyboardInterrupt:
         print("\n🛑 Shutting down server...")
         print("✅ Server stopped")
     except Exception as e:
         print(f"❌ Failed to start server: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -185,8 +185,6 @@ class ClipService {
       // Convert model name to lowercase for server compatibility
       const serverModel = model.toLowerCase();
       
-      console.log(`🔍 Searching products with ${model}:`, { query, serverModel, topK });
-      
       // Use regular fetch for client-side requests
       const response = await fetch(`${UNIFIED_SERVER_URL}/search-products`, {
         method: "POST",
@@ -200,19 +198,11 @@ class ClipService {
         }),
       });
 
-      console.log(`📡 Response status: ${response.status}`, response.ok ? '✅' : '❌');
-
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log(`📦 Search results:`, { 
-        query: data.query, 
-        model: data.model, 
-        productCount: data.products?.length || 0,
-        totalResults: data.total_results 
-      });
 
       // Convert API products to client format
       const products = data.products?.map(product => ({
@@ -237,14 +227,6 @@ class ClipService {
       };
     } catch (error) {
       console.error(`Error searching products with ${model}:`, error);
-      console.error('Error details:', {
-        message: error.message,
-        stack: error.stack,
-        query,
-        model,
-        serverModel: model.toLowerCase(),
-        url: `${UNIFIED_SERVER_URL}/search-products`
-      });
       throw error;
     }
   }
@@ -300,13 +282,8 @@ class ClipService {
    */
   static async getImages() {
     try {
-      // Cache image list for 30 minutes (changes infrequently)
-      const response = await fetch(`${UNIFIED_SERVER_URL}/images`, {
-        next: { 
-          revalidate: 1800,
-          tags: ['images', 'image-list']
-        }
-      });
+      // Use regular fetch for client-side requests
+      const response = await fetch(`${UNIFIED_SERVER_URL}/images`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -326,13 +303,8 @@ class ClipService {
    */
   static async getDatabaseStats() {
     try {
-      // Cache stats for 5 minutes
-      const response = await fetch(`${UNIFIED_SERVER_URL}/stats`, {
-        next: { 
-          revalidate: 300,
-          tags: ['stats', 'database-stats']
-        }
-      });
+      // Use regular fetch for client-side requests
+      const response = await fetch(`${UNIFIED_SERVER_URL}/stats`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

@@ -1,23 +1,24 @@
-// AI Search Service for communicating with CLIP, EVA02 and DFN5B servers
-const CLIP_SERVER_URL = "http://localhost:5002";
-const EVA02_SERVER_URL = "http://localhost:5003";
-const DFN5B_SERVER_URL = "http://localhost:5004";
+// AI Search Service for the unified multi-model server
+const UNIFIED_SERVER_URL = "http://localhost:5000";
 
-// Available AI models
+// Available AI models (all served from unified server)
 export const AI_MODELS = {
   CLIP: {
     name: "CLIP",
-    url: CLIP_SERVER_URL,
+    url: UNIFIED_SERVER_URL,
+    endpoint: "/search/clip",
     description: "OpenAI CLIP - General purpose vision-language model",
   },
   EVA02: {
     name: "EVA02",
-    url: EVA02_SERVER_URL,
+    url: UNIFIED_SERVER_URL,
+    endpoint: "/search/eva02",
     description: "timm/eva02_large_patch14_clip_336.merged2b_s6b_b61k",
   },
   DFN5B: {
     name: "DFN5B",
-    url: DFN5B_SERVER_URL,
+    url: UNIFIED_SERVER_URL,
+    endpoint: "/search/dfn5b",
     description: "DFN5B-CLIP ViT-H-14 by Apple",
   },
 };
@@ -37,7 +38,8 @@ export class ClipService {
     }
 
     try {
-      const response = await fetch(`${modelConfig.url}/search`, {
+      // Use the unified server endpoint
+      const response = await fetch(`${modelConfig.url}${modelConfig.endpoint}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

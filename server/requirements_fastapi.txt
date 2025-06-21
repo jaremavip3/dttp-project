@@ -1,0 +1,24 @@
+# Multi-Model AI Search Server Requirements
+
+# Core FastAPI dependencies
+fastapi==0.115.12
+uvicorn==0.34.3
+pydantic>=2.0.0
+
+# AI/ML dependencies
+torch>=2.0.0
+torchvision>=0.15.0
+transformers==4.52.4
+open_clip_torch>=2.24.0
+timm>=0.9.0
+
+# Image processing
+Pillow>=10.0.0
+pillow-avif>=1.4.0  # For AVIF support
+
+# Data handling
+numpy>=1.24.0
+python-multipart>=0.0.6
+
+# Development
+python-dotenv>=1.0.0

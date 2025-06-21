@@ -178,9 +178,25 @@ class ClipService {
    * @param {string} query - The search query text
    * @param {string} model - The model to use
    * @param {number} topK - Number of results
+   * @param {boolean} useClientCache - Whether to use client-side cache (default: true)
    * @returns {Promise<Object>} Formatted search results
    */
-  static async searchProductsV2(query, model = "CLIP", topK = 10) {
+  static async searchProductsV2(query, model = "CLIP", topK = 10, useClientCache = true) {
+    // Generate cache key for client-side cache
+    const cacheKey = CacheManager.generateSearchKey(query, model, { topK });
+    
+    // Try to get from client-side cache first (faster for repeated searches)
+    if (useClientCache && CacheManager.isAvailable()) {
+      const cached = CacheManager.get(CACHE_TYPES.SEARCH_RESULTS, cacheKey);
+      if (cached) {
+        return {
+          ...cached,
+          fromCache: true,
+          cacheType: 'client'
+        };
+      }
+    }
+
     try {
       // Convert model name to lowercase for server compatibility
       const serverModel = model.toLowerCase();
@@ -216,7 +232,7 @@ class ClipService {
         description: product.description || `${product.category || "Product"} item`,
       })) || [];
 
-      return {
+      const result = {
         query: data.query,
         products: products,
         totalImages: data.total_results,
@@ -225,6 +241,13 @@ class ClipService {
         fromCache: false,
         cacheType: 'server'
       };
+      
+      // Cache the result on client-side for immediate repeated access
+      if (useClientCache && CacheManager.isAvailable()) {
+        CacheManager.set(CACHE_TYPES.SEARCH_RESULTS, result, cacheKey);
+      }
+      
+      return result;
     } catch (error) {
       console.error(`Error searching products with ${model}:`, error);
       throw error;
@@ -240,8 +263,8 @@ class ClipService {
    * @returns {Promise<Array>} Array of products with similarity scores
    */
   static async searchProducts(query, products, model = "CLIP", topK = 10) {
-    // Use the new database-backed search method
-    return this.searchProductsV2(query, model, topK);
+    // Use the new database-backed search method with caching enabled
+    return this.searchProductsV2(query, model, topK, true);
   }
 
   /**

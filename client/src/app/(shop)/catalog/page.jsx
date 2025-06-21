@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Grid, { GridItem } from "@/components/Grid";
 import SearchInput from "@/components/SearchInput";
 import ModelSelector from "@/components/ModelSelector";
+import CacheStatusIndicator from "@/components/CacheStatusIndicator";
 // import { LoadingSpinner, Button } from "@/uiLibrary";
 import { useFilters } from "./layout";
 
@@ -30,6 +31,7 @@ export default function CatalogPage() {
         {/* AI Model Selector */}
         <div className="max-w-4xl mx-auto mb-6">
           <ModelSelector selectedModel={selectedModel} onModelChange={handleModelChange} className="mb-4" />
+          <CacheStatusIndicator className="mb-4" />
         </div>
 
         <SearchInput

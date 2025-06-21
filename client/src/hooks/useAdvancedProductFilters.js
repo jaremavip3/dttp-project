@@ -10,6 +10,8 @@ export function useAdvancedProductFilters() {
   const [isClipSearching, setIsClipSearching] = useState(false);
   const [clipError, setClipError] = useState(null);
   const [activeFilters, setActiveFilters] = useState([]);
+  const [selectedModel, setSelectedModel] = useState("EVA02");
+  const [lastSearchModel, setLastSearchModel] = useState(null);
 
   const handleSearch = async (query) => {
     setSearchQuery(query);
@@ -18,17 +20,28 @@ export function useAdvancedProductFilters() {
     if (query.trim()) {
       setIsClipSearching(true);
       try {
-        const clipSearchResults = await ClipService.searchProducts(query, products);
+        const clipSearchResults = await ClipService.searchProducts(query, products, selectedModel);
         setClipResults(clipSearchResults.products);
+        setLastSearchModel(selectedModel);
       } catch (error) {
-        console.error("CLIP search failed:", error);
-        setClipError("CLIP search unavailable - using text search instead");
+        console.error(`${selectedModel} search failed:`, error);
+        setClipError(`${selectedModel} search unavailable - using text search instead`);
         setClipResults([]);
+        setLastSearchModel(null);
       } finally {
         setIsClipSearching(false);
       }
     } else {
       setClipResults([]);
+      setLastSearchModel(null);
+    }
+  };
+
+  const handleModelChange = (model) => {
+    setSelectedModel(model);
+    // Re-run search with new model if there's an active query
+    if (searchQuery.trim()) {
+      handleSearch(searchQuery);
     }
   };
 
@@ -144,7 +157,10 @@ export function useAdvancedProductFilters() {
     isClipSearching,
     clipError,
     activeFilters,
+    selectedModel,
+    lastSearchModel,
     handleSearch,
     handleFilterSelect,
+    handleModelChange,
   };
 }

@@ -1,16 +1,43 @@
-// CLIP Service for communicating with the FastAPI CLIP server
+// AI Search Service for communicating with CLIP, EVA02 and DFN5B servers
 const CLIP_SERVER_URL = "http://localhost:5002";
+const EVA02_SERVER_URL = "http://localhost:5003";
+const DFN5B_SERVER_URL = "http://localhost:5004";
+
+// Available AI models
+export const AI_MODELS = {
+  CLIP: {
+    name: "CLIP",
+    url: CLIP_SERVER_URL,
+    description: "OpenAI CLIP - General purpose vision-language model",
+  },
+  EVA02: {
+    name: "EVA02",
+    url: EVA02_SERVER_URL,
+    description: "timm/eva02_large_patch14_clip_336.merged2b_s6b_b61k",
+  },
+  DFN5B: {
+    name: "DFN5B",
+    url: DFN5B_SERVER_URL,
+    description: "DFN5B-CLIP ViT-H-14 by Apple",
+  },
+};
 
 export class ClipService {
   /**
-   * Search for products using CLIP semantic similarity
+   * Search for products using selected AI model
    * @param {string} query - The search query text
+   * @param {string} model - The model to use (e.g., 'CLIP', 'EVA02', 'DFN5B')
    * @param {number} topK - Number of top results to return
    * @returns {Promise<Array>} Array of search results with similarity scores
    */
-  static async searchImages(query, topK = 10) {
+  static async searchImages(query, model = "CLIP", topK = 10) {
+    const modelConfig = AI_MODELS[model];
+    if (!modelConfig) {
+      throw new Error(`Unknown model: ${model}. Available models: ${Object.keys(AI_MODELS).join(", ")}`);
+    }
+
     try {
-      const response = await fetch(`${CLIP_SERVER_URL}/search`, {
+      const response = await fetch(`${modelConfig.url}/search`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -26,20 +53,29 @@ export class ClipService {
       }
 
       const data = await response.json();
-      return data;
+      return {
+        ...data,
+        model: model,
+      };
     } catch (error) {
-      console.error("Error searching with CLIP:", error);
+      console.error(`Error searching with ${model}:`, error);
       throw error;
     }
   }
 
   /**
-   * Check if CLIP server is healthy and ready
+   * Check if specified AI server is healthy and ready
+   * @param {string} model - The model to check (e.g., 'CLIP', 'EVA02', 'DFN5B')
    * @returns {Promise<Object>} Health check response
    */
-  static async healthCheck() {
+  static async healthCheck(model = "CLIP") {
+    const modelConfig = AI_MODELS[model];
+    if (!modelConfig) {
+      throw new Error(`Unknown model: ${model}`);
+    }
+
     try {
-      const response = await fetch(`${CLIP_SERVER_URL}/health`);
+      const response = await fetch(`${modelConfig.url}/health`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -47,9 +83,36 @@ export class ClipService {
 
       return await response.json();
     } catch (error) {
-      console.error("Error checking CLIP server health:", error);
+      console.error(`Error checking ${model} server health:`, error);
       throw error;
     }
+  }
+
+  /**
+   * Check health of all available models
+   * @returns {Promise<Object>} Health status for all models
+   */
+  static async checkAllModels() {
+    const results = {};
+
+    for (const [modelKey, modelConfig] of Object.entries(AI_MODELS)) {
+      try {
+        const health = await this.healthCheck(modelKey);
+        results[modelKey] = {
+          status: "healthy",
+          ...health,
+          name: modelConfig.name,
+        };
+      } catch (error) {
+        results[modelKey] = {
+          status: "error",
+          error: error.message,
+          name: modelConfig.name,
+        };
+      }
+    }
+
+    return results;
   }
 
   /**
@@ -80,12 +143,13 @@ export class ClipService {
    * Search for products and return product objects with similarity scores
    * @param {string} query - The search query text
    * @param {Array} products - Array of product objects
+   * @param {string} model - The model to use (e.g., 'CLIP', 'EVA02', 'DFN5B')
    * @param {number} topK - Number of top results to return
    * @returns {Promise<Array>} Array of products with similarity scores
    */
-  static async searchProducts(query, products, topK = 10) {
+  static async searchProducts(query, products, model = "CLIP", topK = 10) {
     try {
-      const clipResults = await this.searchImages(query, topK);
+      const clipResults = await this.searchImages(query, model, topK);
 
       const productsWithScores = clipResults.results
         .map((result) => {
@@ -107,9 +171,11 @@ export class ClipService {
         query: clipResults.query,
         products: productsWithScores,
         totalImages: clipResults.total_images,
+        model: model,
+        modelInfo: clipResults.model_info || AI_MODELS[model].name,
       };
     } catch (error) {
-      console.error("Error searching products with CLIP:", error);
+      console.error(`Error searching products with ${model}:`, error);
       throw error;
     }
   }

@@ -6,3 +6,7 @@ torchvision>=0.15.0
 pillow>=9.0.0
 numpy>=1.21.0
 transformers>=4.21.0
+fastapi
+uvicorn[standard]
+open_clip_torch
+timm

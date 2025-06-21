@@ -3,19 +3,35 @@
 import Header from "@/components/Header";
 import Grid, { GridItem } from "@/components/Grid";
 import SearchInput from "@/components/SearchInput";
+import ModelSelector from "@/components/ModelSelector";
 import { products } from "@/data/products";
 import { useFilters } from "./layout";
 
 export default function CatalogPage() {
-  const { filteredProducts, searchQuery, handleSearch, isClipSearching, clipError, clipResults } = useFilters();
+  const {
+    filteredProducts,
+    searchQuery,
+    handleSearch,
+    isClipSearching,
+    clipError,
+    clipResults,
+    selectedModel,
+    lastSearchModel,
+    handleModelChange,
+  } = useFilters();
 
   return (
     <div>
       <Header title="Catalog" />
       <div className="px-4">
+        {/* AI Model Selector */}
+        <div className="max-w-4xl mx-auto mb-6">
+          <ModelSelector selectedModel={selectedModel} onModelChange={handleModelChange} className="mb-4" />
+        </div>
+
         <SearchInput
           onSearch={handleSearch}
-          placeholder="Search products..."
+          placeholder="Search products with AI semantic search..."
           isLoading={isClipSearching}
           error={clipError}
         />
@@ -25,7 +41,9 @@ export default function CatalogPage() {
           {searchQuery && (
             <span className="ml-2 text-blue-600">
               for "{searchQuery}"
-              {clipResults.length > 0 && <span className="ml-1 text-green-600">(AI-powered results)</span>}
+              {clipResults.length > 0 && lastSearchModel && (
+                <span className="ml-1 text-green-600">(AI results from {lastSearchModel})</span>
+              )}
             </span>
           )}
           {filteredProducts.length > 0 && filteredProducts.length < 10 && (

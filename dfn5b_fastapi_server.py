@@ -1,5 +1,5 @@
-# FastAPI CLIP Search Server
-# Requirements: fastapi, uvicorn, transformers, torch, pillow, numpy
+# DFN5B FastAPI Search Server
+# Requirements: fastapi, uvicorn, open_clip_torch, timm, torch, pillow, numpy
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,15 +7,16 @@ from pydantic import BaseModel
 import os
 import json
 import numpy as np
-from transformers import CLIPProcessor, CLIPModel
-from PIL import Image
 import torch
+from PIL import Image
 from typing import List, Optional
 from contextlib import asynccontextmanager
+import open_clip
 
 # Global variables
 model = None
-processor = None
+preprocess = None
+tokenizer = None
 image_embeddings = {}
 
 
@@ -23,11 +24,14 @@ image_embeddings = {}
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    global model, processor
-    print("Loading CLIP model...")
-    model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
-    processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
-    print("CLIP model loaded successfully!")
+    global model, preprocess, tokenizer
+    print("Loading DFN5B model (apple/DFN5B-CLIP-ViT-H-14)...")
+    model, _, preprocess = open_clip.create_model_and_transforms(
+        "hf-hub:apple/DFN5B-CLIP-ViT-H-14"
+    )
+    tokenizer = open_clip.get_tokenizer("hf-hub:apple/DFN5B-CLIP-ViT-H-14")
+    model.eval()
+    print("DFN5B model loaded successfully!")
 
     # Load image embeddings
     load_image_embeddings()
@@ -40,8 +44,8 @@ async def lifespan(app: FastAPI):
 
 # Initialize FastAPI app with lifespan manager
 app = FastAPI(
-    title="CLIP Semantic Search API",
-    description="AI-powered semantic product search using OpenAI CLIP model",
+    title="DFN5B Semantic Search API",
+    description="AI-powered semantic product search using Apple's DFN5B CLIP model",
     version="1.0.0",
     lifespan=lifespan,
 )
@@ -57,7 +61,7 @@ app.add_middleware(
 
 # Path to images
 IMAGES_PATH = "client/public/test_images"
-EMBEDDINGS_CACHE_PATH = "image_embeddings.json"
+EMBEDDINGS_CACHE_PATH = "dfn5b_image_embeddings.json"
 
 
 # Pydantic models for request/response
@@ -75,17 +79,20 @@ class SearchResponse(BaseModel):
     query: str
     results: List[SearchResult]
     total_images: int
+    model_info: str = "apple/DFN5B-CLIP-ViT-H-14"
 
 
 class HealthResponse(BaseModel):
     status: str
     model_loaded: bool
     embeddings_count: int
+    model_name: str = "DFN5B (apple/DFN5B-CLIP-ViT-H-14)"
 
 
 class RecomputeResponse(BaseModel):
     message: str
     embeddings_count: int
+    model_used: str = "apple/DFN5B-CLIP-ViT-H-14"
 
 
 def load_image_embeddings():
@@ -93,19 +100,19 @@ def load_image_embeddings():
     global image_embeddings
 
     if os.path.exists(EMBEDDINGS_CACHE_PATH):
-        print("Loading cached image embeddings...")
+        print("Loading cached DFN5B image embeddings...")
         with open(EMBEDDINGS_CACHE_PATH, "r") as f:
             cached_data = json.load(f)
             # Convert lists back to numpy arrays
             image_embeddings = {k: np.array(v) for k, v in cached_data.items()}
-        print(f"Loaded {len(image_embeddings)} cached embeddings")
+        print(f"Loaded {len(image_embeddings)} cached DFN5B embeddings")
     else:
-        print("Computing image embeddings...")
+        print("Computing DFN5B image embeddings...")
         compute_image_embeddings()
 
 
 def compute_image_embeddings():
-    """Compute embeddings for all images in test_images folder"""
+    """Compute embeddings for all images in test_images folder using DFN5B"""
     global image_embeddings
 
     if not os.path.exists(IMAGES_PATH):
@@ -118,7 +125,7 @@ def compute_image_embeddings():
         if f.lower().endswith((".png", ".jpg", ".jpeg", ".avif", ".webp"))
     ]
 
-    print(f"Found {len(image_files)} images to process")
+    print(f"Found {len(image_files)} images to process with DFN5B")
 
     for image_file in image_files:
         try:
@@ -127,15 +134,14 @@ def compute_image_embeddings():
             # Load and process image
             image = Image.open(image_path).convert("RGB")
 
-            # Process image with CLIP
-            inputs = processor(images=image, return_tensors="pt")
+            # Process image with DFN5B
+            image_input = preprocess(image).unsqueeze(0)
 
             with torch.no_grad():
-                image_features = model.get_image_features(**inputs)
+                # Get image embeddings from DFN5B
+                image_features = model.encode_image(image_input)
                 # Normalize features
-                image_features = image_features / image_features.norm(
-                    dim=-1, keepdim=True
-                )
+                image_features /= image_features.norm(dim=-1, keepdim=True)
                 embedding = image_features.squeeze().numpy()
 
             # Store embedding
@@ -151,26 +157,27 @@ def compute_image_embeddings():
     with open(EMBEDDINGS_CACHE_PATH, "w") as f:
         json.dump(cache_data, f)
 
-    print(f"Computed and cached {len(image_embeddings)} image embeddings")
+    print(f"Computed and cached {len(image_embeddings)} DFN5B image embeddings")
 
 
 def search_images(query_text: str, top_k: int = 10) -> List[SearchResult]:
-    """Search for images similar to query text"""
+    """Search for images similar to query text using DFN5B"""
     if not image_embeddings:
         return []
 
     # Get text embedding
-    inputs = processor(text=[query_text], return_tensors="pt", padding=True)
+    text_input = tokenizer([query_text])
 
     with torch.no_grad():
-        text_features = model.get_text_features(**inputs)
+        text_features = model.encode_text(text_input)
         # Normalize features
-        text_features = text_features / text_features.norm(dim=-1, keepdim=True)
+        text_features /= text_features.norm(dim=-1, keepdim=True)
         text_embedding = text_features.squeeze().numpy()
 
     # Calculate similarities
     similarities = []
     for image_name, image_embedding in image_embeddings.items():
+        # Both embeddings are already normalized, so dot product = cosine similarity
         similarity = np.dot(text_embedding, image_embedding)
         similarities.append(
             SearchResult(image=image_name, similarity=float(similarity))
@@ -186,7 +193,8 @@ def search_images(query_text: str, top_k: int = 10) -> List[SearchResult]:
 async def root():
     """Root endpoint with API information"""
     return {
-        "message": "CLIP Semantic Search API",
+        "message": "DFN5B Semantic Search API",
+        "model": "apple/DFN5B-CLIP-ViT-H-14",
         "version": "1.0.0",
         "endpoints": {
             "health": "/health",
@@ -209,7 +217,7 @@ async def health_check():
 
 @app.post("/search", response_model=SearchResponse)
 async def search(request: SearchRequest):
-    """Search endpoint for text-to-image similarity"""
+    """Search endpoint for text-to-image similarity using DFN5B"""
     try:
         query_text = request.query.strip()
 
@@ -229,7 +237,7 @@ async def search(request: SearchRequest):
 
 @app.post("/recompute", response_model=RecomputeResponse)
 async def recompute_embeddings():
-    """Recompute image embeddings (useful if images are updated)"""
+    """Recompute image embeddings using DFN5B (useful if images are updated)"""
     try:
         # Remove cache file
         if os.path.exists(EMBEDDINGS_CACHE_PATH):
@@ -239,7 +247,7 @@ async def recompute_embeddings():
         compute_image_embeddings()
 
         return RecomputeResponse(
-            message="Embeddings recomputed successfully",
+            message="DFN5B embeddings recomputed successfully",
             embeddings_count=len(image_embeddings),
         )
 
@@ -250,11 +258,11 @@ async def recompute_embeddings():
 if __name__ == "__main__":
     import uvicorn
 
-    print("Starting FastAPI CLIP search server on http://localhost:5002")
+    print("Starting DFN5B FastAPI search server on http://localhost:5004")
     uvicorn.run(
-        "fastapi_clip_server:app",
+        "dfn5b_fastapi_server:app",
         host="0.0.0.0",
-        port=5002,
+        port=5004,
         reload=True,
         log_level="info",
     )

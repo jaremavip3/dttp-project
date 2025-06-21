@@ -1,5 +1,5 @@
-// CLIP Service for communicating with the Python CLIP server
-const CLIP_SERVER_URL = "http://localhost:5001";
+// CLIP Service for communicating with the FastAPI CLIP server
+const CLIP_SERVER_URL = "http://localhost:5002";
 
 export class ClipService {
   /**

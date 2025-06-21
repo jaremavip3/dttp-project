@@ -64,9 +64,7 @@ export default async function ProductPage({ params }) {
               <h1 className="text-4xl font-bold text-gray-900 leading-tight">{product.name}</h1>
               <div className="flex items-center gap-4">
                 <p className="text-3xl font-bold text-blue-600">${product.price}</p>
-                <span className="text-sm text-gray-500 bg-green-50 text-green-700 px-2 py-1 rounded-full">
-                  In Stock
-                </span>
+                <span className="text-sm bg-green-50 text-green-700 px-2 py-1 rounded-full">In Stock</span>
               </div>
             </div>
 

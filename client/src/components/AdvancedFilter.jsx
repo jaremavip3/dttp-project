@@ -17,7 +17,7 @@ export default function AdvancedFilter({ onFilterSelect, activeFilters = [] }) {
   });
 
   // Safety check for SSR
-  if (!filterStructure || typeof filterStructure !== 'object') {
+  if (!filterStructure || typeof filterStructure !== "object") {
     return (
       <div className="w-80 bg-white border-r border-gray-200 h-screen sticky top-0 overflow-hidden">
         <div className="p-4">
@@ -51,20 +51,21 @@ export default function AdvancedFilter({ onFilterSelect, activeFilters = [] }) {
       {/* Filter Navigation */}
       <div className="border-b border-gray-200 bg-white p-2">
         <div className="space-y-1">
-          {filterStructure && Object.entries(filterStructure).map(([key, category]) => (
-            <button
-              key={key}
-              onClick={() => setActiveTab(key)}
-              className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                activeTab === key
-                  ? "bg-blue-100 text-blue-700 border border-blue-200"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-              }`}
-            >
-              <span className="mr-3 text-lg">{category.icon}</span>
-              {category.name}
-            </button>
-          ))}
+          {filterStructure &&
+            Object.entries(filterStructure).map(([key, category]) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  activeTab === key
+                    ? "bg-blue-100 text-blue-700 border border-blue-200"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                <span className="mr-3 text-lg">{category.icon}</span>
+                {category.name}
+              </button>
+            ))}
         </div>
       </div>
 

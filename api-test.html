@@ -1,43 +1,42 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>API Test</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Testing API Connectivity</h1>
     <div id="results"></div>
-    
+
     <script>
-        async function testAPI() {
-            const results = document.getElementById('results');
-            
-            try {
-                // Test health endpoint
-                console.log('Testing health endpoint...');
-                const healthResponse = await fetch('http://localhost:8000/health');
-                const healthData = await healthResponse.json();
-                
-                results.innerHTML += '<h2>Health Endpoint ✅</h2>';
-                results.innerHTML += '<pre>' + JSON.stringify(healthData, null, 2) + '</pre>';
-                
-                // Test products endpoint
-                console.log('Testing products endpoint...');
-                const productsResponse = await fetch('http://localhost:8000/products?per_page=3');
-                const productsData = await productsResponse.json();
-                
-                results.innerHTML += '<h2>Products Endpoint ✅</h2>';
-                results.innerHTML += '<pre>' + JSON.stringify(productsData, null, 2) + '</pre>';
-                
-                results.innerHTML += '<h2>✅ All tests passed!</h2>';
-                
-            } catch (error) {
-                results.innerHTML += '<h2>❌ Error: ' + error.message + '</h2>';
-                console.error('API test failed:', error);
-            }
+      async function testAPI() {
+        const results = document.getElementById("results");
+
+        try {
+          // Test health endpoint
+          console.log("Testing health endpoint...");
+          const healthResponse = await fetch("http://localhost:8000/health");
+          const healthData = await healthResponse.json();
+
+          results.innerHTML += "<h2>Health Endpoint ✅</h2>";
+          results.innerHTML += "<pre>" + JSON.stringify(healthData, null, 2) + "</pre>";
+
+          // Test products endpoint
+          console.log("Testing products endpoint...");
+          const productsResponse = await fetch("http://localhost:8000/products?per_page=3");
+          const productsData = await productsResponse.json();
+
+          results.innerHTML += "<h2>Products Endpoint ✅</h2>";
+          results.innerHTML += "<pre>" + JSON.stringify(productsData, null, 2) + "</pre>";
+
+          results.innerHTML += "<h2>✅ All tests passed!</h2>";
+        } catch (error) {
+          results.innerHTML += "<h2>❌ Error: " + error.message + "</h2>";
+          console.error("API test failed:", error);
         }
-        
-        // Run test when page loads
-        testAPI();
+      }
+
+      // Run test when page loads
+      testAPI();
     </script>
-</body>
+  </body>
 </html>

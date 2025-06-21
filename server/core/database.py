@@ -37,7 +37,9 @@ required_vars = [
 
 missing_vars = [var_name for var_name, var_value in required_vars if not var_value]
 if missing_vars:
-    raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
+    raise ValueError(
+        f"Missing required environment variables: {', '.join(missing_vars)}"
+    )
 
 # Construct database URLs
 DATABASE_URL = f"postgresql+asyncpg://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"

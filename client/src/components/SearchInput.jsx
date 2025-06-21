@@ -29,7 +29,7 @@ export default function SearchInputComponent({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+            if (e.key === "Enter") {
               handleSearch(query);
             }
           }}
@@ -39,11 +39,7 @@ export default function SearchInputComponent({
         />
         <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
           {query && (
-            <button
-              onClick={handleClear}
-              className="p-1 text-gray-400 hover:text-gray-600"
-              type="button"
-            >
+            <button onClick={handleClear} className="p-1 text-gray-400 hover:text-gray-600" type="button">
               ✕
             </button>
           )}
@@ -57,12 +53,8 @@ export default function SearchInputComponent({
           </button>
         </div>
       </div>
-      
-      {error && (
-        <p className="mt-2 text-sm text-red-600 text-center">
-          {error}
-        </p>
-      )}
+
+      {error && <p className="mt-2 text-sm text-red-600 text-center">{error}</p>}
     </div>
   );
 }

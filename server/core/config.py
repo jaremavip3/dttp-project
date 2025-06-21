@@ -26,7 +26,9 @@ class Settings(BaseModel):
 
     # Performance settings
     MAX_WORKERS: int = int(os.getenv("MAX_WORKERS", "4"))
-    ENABLE_MODEL_PARALLELISM: bool = os.getenv("ENABLE_MODEL_PARALLELISM", "true").lower() == "true"
+    ENABLE_MODEL_PARALLELISM: bool = (
+        os.getenv("ENABLE_MODEL_PARALLELISM", "true").lower() == "true"
+    )
 
     # Logging
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")

@@ -84,13 +84,9 @@ export default function ModelSelector({ selectedModel, onModelChange, className 
 
               <div className="flex items-center justify-between text-xs">
                 <span className={`${getStatusColor(key)} font-medium`}>
-                  {health?.status === "healthy"
-                    ? "Ready"
-                    : health?.error ? "Offline" : "Loading"}
+                  {health?.status === "healthy" ? "Ready" : health?.error ? "Offline" : "Loading"}
                 </span>
-                {isSelected && (
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                )}
+                {isSelected && <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>}
               </div>
             </button>
           );
@@ -99,12 +95,8 @@ export default function ModelSelector({ selectedModel, onModelChange, className 
 
       {Object.values(modelHealth).every((h) => h?.status !== "healthy") && !isChecking && (
         <div className="relative p-2.5 rounded-lg backdrop-blur-sm bg-red-50/60 border border-red-200/40">
-          <p className="text-xs text-red-700 font-medium">
-            Server unavailable
-          </p>
-          <p className="text-xs text-red-600 mt-0.5">
-            Check port 8000
-          </p>
+          <p className="text-xs text-red-700 font-medium">Server unavailable</p>
+          <p className="text-xs text-red-600 mt-0.5">Check port 8000</p>
         </div>
       )}
     </div>

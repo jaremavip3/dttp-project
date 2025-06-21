@@ -1,6 +1,6 @@
 // AI Search Service for the unified multi-model server
 // Enhanced with Next.js native caching strategies
-import { CacheManager, CACHE_TYPES } from '@/utils/cache';
+import { CacheManager, CACHE_TYPES } from "@/utils/cache";
 
 const UNIFIED_SERVER_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -43,7 +43,7 @@ class ClipService {
 
     // Generate cache key for client-side cache
     const cacheKey = CacheManager.generateSearchKey(query, model, { topK });
-    
+
     // Try to get from client-side cache first (faster for repeated searches)
     if (useClientCache && CacheManager.isAvailable()) {
       const cached = CacheManager.get(CACHE_TYPES.SEARCH_RESULTS, cacheKey);
@@ -51,7 +51,7 @@ class ClipService {
         return {
           ...cached,
           fromCache: true,
-          cacheType: 'client'
+          cacheType: "client",
         };
       }
     }
@@ -78,14 +78,14 @@ class ClipService {
         ...data,
         model: model,
         fromCache: false,
-        cacheType: 'none'
+        cacheType: "none",
       };
-      
+
       // Cache the result on client-side for immediate repeated access
       if (useClientCache && CacheManager.isAvailable()) {
         CacheManager.set(CACHE_TYPES.SEARCH_RESULTS, result, cacheKey);
       }
-      
+
       return result;
     } catch (error) {
       console.error(`Error searching with ${model}:`, error);
@@ -133,39 +133,39 @@ class ClipService {
       }
 
       const data = await response.json();
-      
+
       // Transform the array of models to an object format expected by ModelSelector
       const modelHealth = {};
-      
+
       if (data.models && Array.isArray(data.models)) {
-        data.models.forEach(model => {
+        data.models.forEach((model) => {
           // Map server model names to client model names
           let clientModelName;
           switch (model.name.toLowerCase()) {
-            case 'clip':
-              clientModelName = 'CLIP';
+            case "clip":
+              clientModelName = "CLIP";
               break;
-            case 'eva02':
-              clientModelName = 'EVA02';
+            case "eva02":
+              clientModelName = "EVA02";
               break;
-            case 'dfn5b':
-              clientModelName = 'DFN5B';
+            case "dfn5b":
+              clientModelName = "DFN5B";
               break;
             default:
               clientModelName = model.name.toUpperCase();
           }
-          
+
           modelHealth[clientModelName] = {
             name: clientModelName,
             status: model.status,
             loaded: model.loaded,
             embeddings_count: model.embeddings_count,
             model_info: model.model_info,
-            error: model.status !== 'healthy' ? `Model ${model.status}` : null
+            error: model.status !== "healthy" ? `Model ${model.status}` : null,
           };
         });
       }
-      
+
       return modelHealth;
     } catch (error) {
       console.error("Error checking overall server health:", error);
@@ -184,7 +184,7 @@ class ClipService {
   static async searchProductsV2(query, model = "CLIP", topK = 10, useClientCache = true) {
     // Generate cache key for client-side cache
     const cacheKey = CacheManager.generateSearchKey(query, model, { topK });
-    
+
     // Try to get from client-side cache first (faster for repeated searches)
     if (useClientCache && CacheManager.isAvailable()) {
       const cached = CacheManager.get(CACHE_TYPES.SEARCH_RESULTS, cacheKey);
@@ -192,7 +192,7 @@ class ClipService {
         return {
           ...cached,
           fromCache: true,
-          cacheType: 'client'
+          cacheType: "client",
         };
       }
     }
@@ -200,7 +200,7 @@ class ClipService {
     try {
       // Convert model name to lowercase for server compatibility
       const serverModel = model.toLowerCase();
-      
+
       // Use regular fetch for client-side requests
       const response = await fetch(`${UNIFIED_SERVER_URL}/search-products`, {
         method: "POST",
@@ -221,16 +221,17 @@ class ClipService {
       const data = await response.json();
 
       // Convert API products to client format
-      const products = data.products?.map(product => ({
-        id: product.id || product.filename,
-        name: product.name || product.filename?.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "),
-        image: product.image_url || product.image,
-        similarity: product.similarity_score || product.similarity || product.score,
-        category: product.category,
-        tags: product.tags || [],
-        price: product.price || Math.round((Math.random() * 50 + 20) * 100) / 100,
-        description: product.description || `${product.category || "Product"} item`,
-      })) || [];
+      const products =
+        data.products?.map((product) => ({
+          id: product.id || product.filename,
+          name: product.name || product.filename?.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "),
+          image: product.image_url || product.image,
+          similarity: product.similarity_score || product.similarity || product.score,
+          category: product.category,
+          tags: product.tags || [],
+          price: product.price || Math.round((Math.random() * 50 + 20) * 100) / 100,
+          description: product.description || `${product.category || "Product"} item`,
+        })) || [];
 
       const result = {
         query: data.query,
@@ -239,14 +240,14 @@ class ClipService {
         model: model,
         modelInfo: data.model || AI_MODELS[model].name,
         fromCache: false,
-        cacheType: 'server'
+        cacheType: "server",
       };
-      
+
       // Cache the result on client-side for immediate repeated access
       if (useClientCache && CacheManager.isAvailable()) {
         CacheManager.set(CACHE_TYPES.SEARCH_RESULTS, result, cacheKey);
       }
-      
+
       return result;
     } catch (error) {
       console.error(`Error searching products with ${model}:`, error);
@@ -284,7 +285,7 @@ class ClipService {
         method: "POST",
         body: formData,
         // No caching for uploads
-        cache: 'no-store'
+        cache: "no-store",
       });
 
       if (!response.ok) {
@@ -352,7 +353,7 @@ class ClipService {
         headers: {
           "Content-Type": "application/json",
         },
-        cache: 'no-store'
+        cache: "no-store",
       });
 
       if (!response.ok) {
@@ -373,10 +374,10 @@ class ClipService {
   static async revalidateCacheTags(tags) {
     // This would be called from a Server Action
     // Example usage: ClipService.revalidateCacheTags(['products', 'ai-search'])
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       // Server-side only
-      const { revalidateTag } = await import('next/cache');
-      tags.forEach(tag => revalidateTag(tag));
+      const { revalidateTag } = await import("next/cache");
+      tags.forEach((tag) => revalidateTag(tag));
     }
   }
 }

@@ -20,9 +20,9 @@ async function testSearchCaching() {
 
   for (let i = 1; i <= numTests; i++) {
     console.log(`📡 Test ${i}/${numTests}:`);
-    
+
     const startTime = Date.now();
-    
+
     try {
       const response = await fetch("http://localhost:8000/search-products", {
         method: "POST",
@@ -43,16 +43,16 @@ async function testSearchCaching() {
       const data = await response.json();
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       times.push(duration);
-      
+
       console.log(`   ⏱️  Response time: ${duration}ms`);
       console.log(`   📦 Results: ${data.products?.length || 0} products`);
-      console.log(`   🎯 Model: ${data.model || 'unknown'}`);
-      
+      console.log(`   🎯 Model: ${data.model || "unknown"}`);
+
       if (i < numTests) {
         console.log("   ⏳ Waiting 1 second...\n");
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     } catch (error) {
       console.log(`   ❌ Error: ${error.message}`);
@@ -61,13 +61,13 @@ async function testSearchCaching() {
 
   console.log("\n📊 Performance Summary:");
   console.log(`   First request: ${times[0]}ms`);
-  console.log(`   Subsequent requests: ${times.slice(1).join('ms, ')}ms`);
-  
+  console.log(`   Subsequent requests: ${times.slice(1).join("ms, ")}ms`);
+
   const avgSubsequent = times.slice(1).reduce((a, b) => a + b, 0) / (times.length - 1);
-  const improvement = ((times[0] - avgSubsequent) / times[0] * 100).toFixed(1);
-  
+  const improvement = (((times[0] - avgSubsequent) / times[0]) * 100).toFixed(1);
+
   console.log(`   Average improvement: ${improvement}% faster`);
-  
+
   if (avgSubsequent < times[0] * 0.8) {
     console.log("   ✅ Caching appears to be working (20%+ improvement)");
   } else {
@@ -76,10 +76,10 @@ async function testSearchCaching() {
 }
 
 // Check if we're in Node.js environment
-if (typeof fetch === 'undefined') {
+if (typeof fetch === "undefined") {
   // Use node-fetch if available, or show alternative
   try {
-    const { default: fetch } = await import('node-fetch');
+    const { default: fetch } = await import("node-fetch");
     global.fetch = fetch;
     testSearchCaching();
   } catch (error) {

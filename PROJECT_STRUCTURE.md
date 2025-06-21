@@ -91,18 +91,21 @@ dttp-project/
 ## Key Components
 
 ### Backend (FastAPI)
+
 - **unified_server.py**: Main application server handling all AI models
 - **core/database.py**: Supabase connection and configuration
 - **core/models.py**: Database models for images and embeddings
 - **models/**: AI model managers for CLIP, EVA02, and DFN5B
 
 ### Frontend (Next.js)
+
 - **services/clipService.js**: AI-powered semantic search
 - **services/productService.js**: Product data fetching
 - **hooks/useAdvancedProductFilters.js**: Product filtering and search logic
 - **app/(shop)/catalog/**: Product catalog interface
 
 ### Database (Supabase)
+
 - **Images table**: Product metadata and image information
 - **Storage bucket**: Image file storage
 - **Vector embeddings**: AI-generated embeddings for semantic search
@@ -110,6 +113,7 @@ dttp-project/
 ## API Endpoints
 
 ### Main Endpoints
+
 - `GET /products` - Fetch products with pagination and filtering
 - `POST /search-products` - AI-powered product search
 - `GET /images/{filename}` - Serve images (redirects to Supabase Storage)
@@ -117,6 +121,7 @@ dttp-project/
 - `GET /database/stats` - Database statistics
 
 ### AI Search Endpoints
+
 - `POST /search/clip` - Search using OpenAI CLIP
 - `POST /search/eva02` - Search using EVA02
 - `POST /search/dfn5b` - Search using DFN5B
@@ -124,6 +129,7 @@ dttp-project/
 ## Features
 
 ### Implemented
+
 - ✅ Multi-model AI semantic search
 - ✅ Database-backed product catalog
 - ✅ Image storage via Supabase Storage
@@ -135,6 +141,7 @@ dttp-project/
 - ✅ Proper error handling
 
 ### Technologies Used
+
 - **Backend**: Python, FastAPI, SQLAlchemy, Supabase
 - **Frontend**: Next.js, React, Tailwind CSS
 - **AI Models**: OpenAI CLIP, EVA02, DFN5B

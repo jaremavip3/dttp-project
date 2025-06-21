@@ -37,8 +37,8 @@ export function useAdvancedProductFilters() {
         console.error("Failed to load products from API:", error);
         setProductsError(error.message);
         // Show a user-friendly error message
-        if (error.message.includes('Unable to connect to server')) {
-          setProductsError('Unable to connect to the API server. Please ensure it is running on port 8000.');
+        if (error.message.includes("Unable to connect to server")) {
+          setProductsError("Unable to connect to the API server. Please ensure it is running on port 8000.");
         } else {
           setProductsError(error.message);
         }
@@ -62,7 +62,7 @@ export function useAdvancedProductFilters() {
         setLastSearchModel(selectedModel);
       } catch (error) {
         console.error(`${selectedModel} search failed:`, error);
-        if (error.message.includes('Unable to connect to')) {
+        if (error.message.includes("Unable to connect to")) {
           setClipError(`AI search server is not available. Please ensure the server is running on port 8000.`);
         } else {
           setClipError(`${selectedModel} search unavailable - using text search instead`);

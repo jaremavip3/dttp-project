@@ -1,9 +1,11 @@
 # UI Library Documentation
 
 ## Overview
+
 The `uiLibrary` folder contains enhanced shadcn/ui components customized for the StyleAI project. These components provide a consistent design system while extending base shadcn functionality.
 
 ## Structure
+
 ```
 src/uiLibrary/
 ├── index.js                     # Main export file
@@ -17,41 +19,49 @@ src/uiLibrary/
 ## Components
 
 ### Button (`button.jsx`)
+
 Enhanced version of shadcn Button with loading state support.
 
 **Features:**
+
 - All standard shadcn button variants and sizes
 - Loading state with spinner
 - Automatic disable during loading
 
 **Usage:**
+
 ```jsx
-import { Button } from '@/uiLibrary'
+import { Button } from "@/uiLibrary";
 
 <Button loading={isLoading} onClick={handleClick}>
   Save Changes
-</Button>
+</Button>;
 ```
 
 ### LoadingSpinner (`loading-spinner.jsx`)
+
 Consistent loading spinner component.
 
 **Features:**
+
 - Customizable size and color via className
 - Accessibility features (screen reader text)
 - CSS animation based
 
 **Usage:**
-```jsx
-import { LoadingSpinner } from '@/uiLibrary'
 
-<LoadingSpinner className="h-8 w-8 border-blue-600" />
+```jsx
+import { LoadingSpinner } from "@/uiLibrary";
+
+<LoadingSpinner className="h-8 w-8 border-blue-600" />;
 ```
 
 ### ProductCard (`product-card.jsx`)
+
 Specialized card component for displaying products.
 
 **Features:**
+
 - Built on shadcn Card components
 - Image display with Next.js Image optimization
 - Badge system (New, Best Seller, Sale)
@@ -60,20 +70,19 @@ Specialized card component for displaying products.
 - Price display with sale pricing support
 
 **Usage:**
-```jsx
-import { ProductCard } from '@/uiLibrary'
 
-<ProductCard
-  product={product}
-  linkHref={`/catalog/${product.id}`}
-  className="h-full"
-/>
+```jsx
+import { ProductCard } from "@/uiLibrary";
+
+<ProductCard product={product} linkHref={`/catalog/${product.id}`} className="h-full" />;
 ```
 
 ### SearchInput (`search-input.jsx`)
+
 Enhanced input component for search functionality.
 
 **Features:**
+
 - Built on shadcn Input
 - Search and clear buttons
 - Loading state support
@@ -81,8 +90,9 @@ Enhanced input component for search functionality.
 - Icon integration (Lucide React)
 
 **Usage:**
+
 ```jsx
-import { SearchInput } from '@/uiLibrary'
+import { SearchInput } from "@/uiLibrary";
 
 <SearchInput
   value={query}
@@ -91,12 +101,13 @@ import { SearchInput } from '@/uiLibrary'
   onClear={handleClear}
   loading={isSearching}
   placeholder="Search products..."
-/>
+/>;
 ```
 
 ## Re-exported Components
 
 The following shadcn components are re-exported for convenience:
+
 - `Badge` - For status indicators
 - `Card`, `CardContent`, `CardDescription`, `CardFooter`, `CardHeader`, `CardTitle` - Card primitives
 - `Input` - Base input component

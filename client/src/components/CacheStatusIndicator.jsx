@@ -1,33 +1,33 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Activity, Database, Zap } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { Activity, Database, Zap } from "lucide-react";
 
 /**
  * Compact cache status indicator for the main UI
  * Shows basic cache status without complex dependencies
  */
 export default function CacheStatusIndicator({ showDetails = false }) {
-  const [stats, setStats] = useState(null)
+  const [stats, setStats] = useState(null);
 
   useEffect(() => {
     const updateStats = () => {
-      if (typeof window !== 'undefined' && localStorage) {
-        const keys = Object.keys(localStorage).filter(key => key.startsWith('dttp_'))
+      if (typeof window !== "undefined" && localStorage) {
+        const keys = Object.keys(localStorage).filter((key) => key.startsWith("dttp_"));
         setStats({
           available: true,
           totalEntries: keys.length,
-          hitRate: '~70%' // Estimated based on typical usage
-        })
+          hitRate: "~70%", // Estimated based on typical usage
+        });
       } else {
-        setStats({ available: false })
+        setStats({ available: false });
       }
-    }
+    };
 
-    updateStats()
-    const interval = setInterval(updateStats, 30000) // Update every 30 seconds
-    return () => clearInterval(interval)
-  }, [])
+    updateStats();
+    const interval = setInterval(updateStats, 30000); // Update every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   if (!stats?.available) {
     return showDetails ? (
@@ -35,18 +35,18 @@ export default function CacheStatusIndicator({ showDetails = false }) {
         <Database className="h-3 w-3 mr-1" />
         Cache: Disabled
       </div>
-    ) : null
+    ) : null;
   }
 
   const StatusBadge = () => (
     <div className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs border border-blue-200 cursor-pointer">
       <Activity className="h-3 w-3 mr-1" />
-      Cache: {stats?.hitRate || '0%'}
+      Cache: {stats?.hitRate || "0%"}
     </div>
-  )
+  );
 
   if (!showDetails) {
-    return <StatusBadge />
+    return <StatusBadge />;
   }
 
   return (
@@ -56,11 +56,9 @@ export default function CacheStatusIndicator({ showDetails = false }) {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="font-medium">Cache Status</h4>
-            <div className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
-              Good
-            </div>
+            <div className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Good</div>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <div className="font-medium">{stats.totalEntries}</div>
@@ -71,7 +69,7 @@ export default function CacheStatusIndicator({ showDetails = false }) {
               <div className="text-gray-600">Hit Rate</div>
             </div>
           </div>
-          
+
           <div className="border-t pt-2">
             <div className="flex items-center gap-2 text-xs text-gray-600">
               <Zap className="h-3 w-3" />
@@ -81,5 +79,5 @@ export default function CacheStatusIndicator({ showDetails = false }) {
         </div>
       </div>
     </div>
-  )
+  );
 }

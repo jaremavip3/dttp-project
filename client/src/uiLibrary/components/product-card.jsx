@@ -1,23 +1,24 @@
-import * as React from "react"
-import { Card as ShadcnCard, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
-import Image from "next/image"
-import Link from "next/link"
+import * as React from "react";
+import {
+  Card as ShadcnCard,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
+import Link from "next/link";
 
-const ProductCard = React.forwardRef(({ 
-  className,
-  product,
-  showBadges = true,
-  linkHref,
-  ...props 
-}, ref) => {
-  const CardWrapper = linkHref ? Link : 'div'
-  const cardProps = linkHref ? { href: linkHref } : {}
+const ProductCard = React.forwardRef(({ className, product, showBadges = true, linkHref, ...props }, ref) => {
+  const CardWrapper = linkHref ? Link : "div";
+  const cardProps = linkHref ? { href: linkHref } : {};
 
   return (
     <CardWrapper {...cardProps} className={linkHref ? "group cursor-pointer" : ""}>
-      <ShadcnCard 
+      <ShadcnCard
         ref={ref}
         className={cn(
           "overflow-hidden transition-all duration-300 hover:shadow-lg",
@@ -53,39 +54,31 @@ const ProductCard = React.forwardRef(({
             </div>
           )}
         </div>
-        
+
         <CardContent className="p-4">
           <CardTitle className="text-base font-medium text-gray-900 mb-2 group-hover:text-gray-600 transition-colors">
             {product.name}
           </CardTitle>
-          
+
           {product.category && (
-            <CardDescription className="text-sm text-gray-500 mb-2">
-              {product.category}
-            </CardDescription>
+            <CardDescription className="text-sm text-gray-500 mb-2">{product.category}</CardDescription>
           )}
-          
+
           <div className="flex justify-center gap-2">
             {product.isOnSale && product.originalPrice ? (
               <>
-                <span className="text-gray-500 line-through text-sm">
-                  ${product.originalPrice}
-                </span>
-                <span className="text-red-600 font-medium">
-                  ${product.price}
-                </span>
+                <span className="text-gray-500 line-through text-sm">${product.originalPrice}</span>
+                <span className="text-red-600 font-medium">${product.price}</span>
               </>
             ) : (
-              <span className="text-gray-900 font-medium">
-                ${product.price || '29.99'}
-              </span>
+              <span className="text-gray-900 font-medium">${product.price || "29.99"}</span>
             )}
           </div>
         </CardContent>
       </ShadcnCard>
     </CardWrapper>
-  )
-})
-ProductCard.displayName = "ProductCard"
+  );
+});
+ProductCard.displayName = "ProductCard";
 
-export { ProductCard, ShadcnCard as Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
+export { ProductCard, ShadcnCard as Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle };

@@ -24,18 +24,14 @@ export default function Home() {
         setError(null);
 
         // Fetch all sections in parallel
-        const [
-          featuredResponse,
-          bestSellersResponse,
-          newArrivalsResponse
-        ] = await Promise.all([
+        const [featuredResponse, bestSellersResponse, newArrivalsResponse] = await Promise.all([
           ProductService.fetchProducts({ per_page: 8 }), // General featured products
           ProductService.fetchBestSellers(8),
-          ProductService.fetchNewArrivals(8)
+          ProductService.fetchNewArrivals(8),
         ]);
 
         // Convert featured products to client format
-        const convertedFeatured = featuredResponse.products.map(product => 
+        const convertedFeatured = featuredResponse.products.map((product) =>
           ProductService.convertToClientProduct(product)
         );
 
@@ -75,8 +71,8 @@ export default function Home() {
         <div className="py-16 text-center">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
             <p className="text-red-800">Failed to load products: {error}</p>
-            <button 
-              onClick={() => window.location.reload()} 
+            <button
+              onClick={() => window.location.reload()}
               className="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
             >
               Retry

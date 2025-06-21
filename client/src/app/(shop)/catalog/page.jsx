@@ -54,8 +54,8 @@ export default function CatalogPage() {
           <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-yellow-700">⚠️ Failed to load products from database: {productsError}</p>
             <p className="text-yellow-600 text-sm mt-2">Using fallback products. Check server connection.</p>
-            <button 
-              onClick={() => window.location.reload()} 
+            <button
+              onClick={() => window.location.reload()}
               className="mt-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Retry

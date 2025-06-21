@@ -5,25 +5,25 @@
 // Cache configuration
 const CACHE_CONFIG = {
   PRODUCTS: {
-    key: 'dttp_products_cache',
+    key: "dttp_products_cache",
     ttl: 15 * 60 * 1000, // 15 minutes
   },
   BEST_SELLERS: {
-    key: 'dttp_best_sellers_cache',
+    key: "dttp_best_sellers_cache",
     ttl: 30 * 60 * 1000, // 30 minutes
   },
   NEW_ARRIVALS: {
-    key: 'dttp_new_arrivals_cache',
+    key: "dttp_new_arrivals_cache",
     ttl: 30 * 60 * 1000, // 30 minutes
   },
   CATEGORIES: {
-    key: 'dttp_categories_cache',
+    key: "dttp_categories_cache",
     ttl: 60 * 60 * 1000, // 1 hour
   },
   SEARCH_RESULTS: {
-    key: 'dttp_search_cache',
+    key: "dttp_search_cache",
     ttl: 10 * 60 * 1000, // 10 minutes
-  }
+  },
 };
 
 export class CacheManager {
@@ -32,7 +32,7 @@ export class CacheManager {
    * @returns {boolean}
    */
   static isBrowser() {
-    return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+    return typeof window !== "undefined" && typeof localStorage !== "undefined";
   }
 
   /**
@@ -55,12 +55,12 @@ export class CacheManager {
       const cacheData = {
         data,
         timestamp: Date.now(),
-        ttl: config.ttl
+        ttl: config.ttl,
       };
 
       localStorage.setItem(cacheKey, JSON.stringify(cacheData));
     } catch (error) {
-      console.warn('Failed to set cache:', error);
+      console.warn("Failed to set cache:", error);
     }
   }
 
@@ -82,14 +82,14 @@ export class CacheManager {
 
       const cacheKey = key ? `${config.key}_${key}` : config.key;
       const cached = localStorage.getItem(cacheKey);
-      
+
       if (!cached) {
         return null;
       }
 
       const cacheData = JSON.parse(cached);
       const now = Date.now();
-      
+
       // Check if cache is expired
       if (now - cacheData.timestamp > cacheData.ttl) {
         localStorage.removeItem(cacheKey);
@@ -98,7 +98,7 @@ export class CacheManager {
 
       return cacheData.data;
     } catch (error) {
-      console.warn('Failed to get cache:', error);
+      console.warn("Failed to get cache:", error);
       return null;
     }
   }
@@ -121,15 +121,15 @@ export class CacheManager {
       localStorage.removeItem(config.key);
 
       // Clear related search caches (for search results)
-      if (cacheType === 'SEARCH_RESULTS') {
-        Object.keys(localStorage).forEach(key => {
+      if (cacheType === "SEARCH_RESULTS") {
+        Object.keys(localStorage).forEach((key) => {
           if (key.startsWith(config.key)) {
             localStorage.removeItem(key);
           }
         });
       }
     } catch (error) {
-      console.warn('Failed to clear cache:', error);
+      console.warn("Failed to clear cache:", error);
     }
   }
 
@@ -140,13 +140,13 @@ export class CacheManager {
     if (!this.isBrowser()) return;
 
     try {
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('dttp_')) {
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith("dttp_")) {
           localStorage.removeItem(key);
         }
       });
     } catch (error) {
-      console.warn('Failed to clear all caches:', error);
+      console.warn("Failed to clear all caches:", error);
     }
   }
 
@@ -158,41 +158,40 @@ export class CacheManager {
     const stats = {
       totalCaches: 0,
       totalSize: 0,
-      cacheTypes: {}
+      cacheTypes: {},
     };
 
     if (!this.isBrowser()) return stats;
 
     try {
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('dttp_')) {
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith("dttp_")) {
           const data = localStorage.getItem(key);
           const size = new Blob([data]).size;
-          
+
           stats.totalCaches++;
           stats.totalSize += size;
 
           // Determine cache type from key
-          const cacheType = Object.keys(CACHE_CONFIG).find(type => 
-            key.startsWith(CACHE_CONFIG[type].key)
-          ) || 'unknown';
+          const cacheType =
+            Object.keys(CACHE_CONFIG).find((type) => key.startsWith(CACHE_CONFIG[type].key)) || "unknown";
 
           if (!stats.cacheTypes[cacheType]) {
             stats.cacheTypes[cacheType] = { count: 0, size: 0 };
           }
-          
+
           stats.cacheTypes[cacheType].count++;
           stats.cacheTypes[cacheType].size += size;
         }
       });
 
       // Format size in KB/MB
-      stats.formattedSize = stats.totalSize < 1024 * 1024 
-        ? `${(stats.totalSize / 1024).toFixed(1)} KB`
-        : `${(stats.totalSize / (1024 * 1024)).toFixed(1)} MB`;
-
+      stats.formattedSize =
+        stats.totalSize < 1024 * 1024
+          ? `${(stats.totalSize / 1024).toFixed(1)} KB`
+          : `${(stats.totalSize / (1024 * 1024)).toFixed(1)} MB`;
     } catch (error) {
-      console.warn('Failed to get cache stats:', error);
+      console.warn("Failed to get cache stats:", error);
     }
 
     return stats;
@@ -206,7 +205,7 @@ export class CacheManager {
     if (!this.isBrowser()) return false;
 
     try {
-      const test = '__cache_test__';
+      const test = "__cache_test__";
       localStorage.setItem(test, test);
       localStorage.removeItem(test);
       return true;
@@ -238,7 +237,7 @@ export class CacheManager {
       let available = 0;
 
       // Modern browsers support StorageManager API
-      if ('storage' in navigator && 'estimate' in navigator.storage) {
+      if ("storage" in navigator && "estimate" in navigator.storage) {
         // This is async, so we'll return a promise-based estimate
         // For now, return a rough estimate
         total = 10 * 1024 * 1024; // 10MB rough estimate
@@ -253,10 +252,10 @@ export class CacheManager {
         used: used,
         total: total,
         available: Math.max(0, available),
-        usagePercent: total > 0 ? (used / total * 100).toFixed(2) : 0
+        usagePercent: total > 0 ? ((used / total) * 100).toFixed(2) : 0,
       };
     } catch (error) {
-      console.warn('Failed to get storage info:', error);
+      console.warn("Failed to get storage info:", error);
       return { used: 0, total: 0, available: 0, usagePercent: 0 };
     }
   }
@@ -268,9 +267,9 @@ export class CacheManager {
    * @param {Object} filters - Applied filters
    * @returns {string} Cache key
    */
-  static generateSearchKey(query, model = 'clip', filters = {}) {
+  static generateSearchKey(query, model = "clip", filters = {}) {
     const filterStr = JSON.stringify(filters);
-    const hash = btoa(`${query}_${model}_${filterStr}`).replace(/[/+=]/g, '');
+    const hash = btoa(`${query}_${model}_${filterStr}`).replace(/[/+=]/g, "");
     return hash.substring(0, 32); // Limit key length
   }
 }

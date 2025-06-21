@@ -7,6 +7,7 @@ This guide explains how to set up environment variables for both the server (Pyt
 ## Server Environment Variables
 
 ### Location
+
 Create a `.env` file in the `/server` directory.
 
 ### Required Variables
@@ -43,6 +44,7 @@ ENABLE_MODEL_PARALLELISM=true
 ### Setup Steps
 
 1. Copy the example file:
+
    ```bash
    cp server/.env.example server/.env
    ```
@@ -57,6 +59,7 @@ ENABLE_MODEL_PARALLELISM=true
 ## Client Environment Variables
 
 ### Location
+
 Create a `.env.local` file in the `/client` directory.
 
 ### Required Variables
@@ -71,6 +74,7 @@ NEXT_PUBLIC_API_URL=http://localhost:5000
 ### Setup Steps
 
 1. Copy the example file:
+
    ```bash
    cp client/.env.example client/.env.local
    ```
@@ -101,11 +105,13 @@ dttp-project/
 ## Development vs Production
 
 ### Development
+
 - Use `localhost` URLs
 - Can use relaxed CORS settings (`ALLOWED_ORIGINS=*`)
 - Use development Supabase project
 
 ### Production
+
 - Use proper domain names
 - Restrict CORS to specific origins
 - Use production Supabase project

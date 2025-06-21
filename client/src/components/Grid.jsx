@@ -23,8 +23,8 @@ export function GridItem({ product }) {
     // Add similarity score to metadata for display
     metadata: {
       ...product.metadata,
-      similarityScore: product.similarityScore
-    }
+      similarityScore: product.similarityScore,
+    },
   };
 
   return (
@@ -33,39 +33,33 @@ export function GridItem({ product }) {
         {/* Product Image */}
         <div className="aspect-square bg-gray-100 rounded mb-4 flex items-center justify-center overflow-hidden">
           {enhancedProduct.image ? (
-            <img 
-              src={enhancedProduct.image} 
-              alt={enhancedProduct.name || 'Product'} 
+            <img
+              src={enhancedProduct.image}
+              alt={enhancedProduct.name || "Product"}
               className="w-full h-full object-cover"
             />
           ) : (
             <span className="text-gray-400">No Image</span>
           )}
         </div>
-        
+
         {/* Product Info */}
-        <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
-          {enhancedProduct.name || 'Unnamed Product'}
-        </h3>
-        <p className="text-gray-600 mb-2">
-          ${enhancedProduct.price || '0.00'}
-        </p>
-        
+        <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">{enhancedProduct.name || "Unnamed Product"}</h3>
+        <p className="text-gray-600 mb-2">${enhancedProduct.price || "0.00"}</p>
+
         {/* Product Description */}
         {enhancedProduct.description && (
-          <p className="text-sm text-gray-500 line-clamp-2">
-            {enhancedProduct.description}
-          </p>
+          <p className="text-sm text-gray-500 line-clamp-2">{enhancedProduct.description}</p>
         )}
       </div>
-      
+
       {/* CLIP similarity badge - overlay on top of card */}
       {product.similarityScore && (
         <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full z-10">
           {Math.round(product.similarityScore * 100)}% match
         </div>
       )}
-      
+
       {/* Tags display below card */}
       {product.tags && product.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { CacheManager, CACHE_TYPES } from '@/utils/cache';
+import { useState, useEffect } from "react";
+import { CacheManager, CACHE_TYPES } from "@/utils/cache";
 
 export default function CacheManager() {
   const [cacheStats, setCacheStats] = useState(null);
@@ -20,7 +20,7 @@ export default function CacheManager() {
   }, []);
 
   const handleClearCache = (cacheType) => {
-    if (cacheType === 'ALL') {
+    if (cacheType === "ALL") {
       CacheManager.clearAll();
     } else {
       CacheManager.clear(cacheType);
@@ -70,9 +70,7 @@ export default function CacheManager() {
           <div className="text-sm text-green-700">Total Size</div>
         </div>
         <div className="bg-purple-50 p-4 rounded-lg">
-          <div className="text-2xl font-bold text-purple-600">
-            {Object.keys(cacheStats.cacheTypes).length}
-          </div>
+          <div className="text-2xl font-bold text-purple-600">{Object.keys(cacheStats.cacheTypes).length}</div>
           <div className="text-sm text-purple-700">Cache Types</div>
         </div>
       </div>
@@ -80,39 +78,37 @@ export default function CacheManager() {
       {/* Cache Types Details */}
       <div className="space-y-4">
         <h4 className="font-medium text-gray-900">Cache Details</h4>
-        
-        {cacheStats && cacheStats.cacheTypes && Object.entries(cacheStats.cacheTypes).map(([type, stats]) => (
-          <div key={type} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-            <div className="flex-1">
-              <div className="font-medium text-gray-900">{type}</div>
-              <div className="text-sm text-gray-600">
-                {stats.count} items • {(stats.size / 1024).toFixed(1)} KB
+
+        {cacheStats &&
+          cacheStats.cacheTypes &&
+          Object.entries(cacheStats.cacheTypes).map(([type, stats]) => (
+            <div key={type} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div className="flex-1">
+                <div className="font-medium text-gray-900">{type}</div>
+                <div className="text-sm text-gray-600">
+                  {stats.count} items • {(stats.size / 1024).toFixed(1)} KB
+                </div>
               </div>
+              <button
+                onClick={() => handleClearCache(type)}
+                className="px-3 py-1 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition-colors"
+              >
+                Clear
+              </button>
             </div>
-            <button
-              onClick={() => handleClearCache(type)}
-              className="px-3 py-1 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition-colors"
-            >
-              Clear
-            </button>
-          </div>
-        ))}
+          ))}
 
         {Object.keys(cacheStats.cacheTypes).length === 0 && (
-          <div className="text-center py-4 text-gray-500">
-            No cached data found
-          </div>
+          <div className="text-center py-4 text-gray-500">No cached data found</div>
         )}
       </div>
 
       {/* Actions */}
       <div className="mt-6 pt-4 border-t border-gray-200">
         <div className="flex justify-between items-center">
-          <div className="text-sm text-gray-500">
-            Last updated: {lastUpdated}
-          </div>
+          <div className="text-sm text-gray-500">Last updated: {lastUpdated}</div>
           <button
-            onClick={() => handleClearCache('ALL')}
+            onClick={() => handleClearCache("ALL")}
             className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors font-medium"
           >
             Clear All Cache

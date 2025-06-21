@@ -55,6 +55,7 @@ python unified_server.py
 ```
 
 **Alternative using start script:**
+
 ```bash
 cd server
 ./start.sh
@@ -132,12 +133,14 @@ curl http://localhost:5000/health/eva02
 ## 🎮 Alternative Startup Methods
 
 ### Using the start script
+
 ```bash
 cd server
 ./start.sh
 ```
 
 ### For Development
+
 ```bash
 cd server
 python unified_server.py
@@ -178,36 +181,38 @@ Client Cache (localStorage) → Next.js Cache (Server) → API/Database
 
 ### Cache Configuration
 
-| Data Type | Client TTL | Server TTL | Purpose |
-|-----------|------------|------------|---------|
-| Products | 15 min | 15 min | Product catalog |
-| Search Results | 10 min | 5 min | AI search results |
-| Categories | 1 hour | 1 hour | Category metadata |
-| Best Sellers | 30 min | 1 hour | Featured products |
+| Data Type      | Client TTL | Server TTL | Purpose           |
+| -------------- | ---------- | ---------- | ----------------- |
+| Products       | 15 min     | 15 min     | Product catalog   |
+| Search Results | 10 min     | 5 min      | AI search results |
+| Categories     | 1 hour     | 1 hour     | Category metadata |
+| Best Sellers   | 30 min     | 1 hour     | Featured products |
 
 ### Cache Management
 
 **Development Tools:**
+
 - Cache Management UI: http://localhost:3000/dev/cache
 - Monitor cache performance and manually trigger revalidation
 - View cache statistics and storage usage
 
 **Programmatic Control:**
+
 ```javascript
-import { CacheManager } from '@/utils/cache'
-import { revalidateProductCaches } from '@/app/actions/cacheActions'
+import { CacheManager } from "@/utils/cache";
+import { revalidateProductCaches } from "@/app/actions/cacheActions";
 
 // Clear client cache
-CacheManager.clearAll()
+CacheManager.clearAll();
 
 // Revalidate server cache
-await revalidateProductCaches()
+await revalidateProductCaches();
 ```
 
 ### Performance Metrics
 
 - **Startup Time**: 2-3 minutes for all models to load
-- **Search Speed**: ~100-200ms per query after loading  
+- **Search Speed**: ~100-200ms per query after loading
 - **Cache Hit Rate**: 70-90% for repeated operations
 - **Memory Usage**: ~6-8GB total for all 3 models
 - **Storage Usage**: ~1-5MB localStorage cache

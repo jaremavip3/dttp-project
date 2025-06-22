@@ -23,6 +23,7 @@ import io
 from models.clip_model import CLIPModelManager
 from models.eva02_model import EVA02ModelManager
 from models.dfn5b_model import DFN5BModelManager
+from models.blip2_hf_api_model import BLIP2HFAPIModelManager
 from core.config import Settings
 from core.logging_config import setup_logging
 from core.database import (
@@ -64,6 +65,7 @@ async def lifespan(app: FastAPI):
     model_managers["clip"] = CLIPModelManager()
     model_managers["eva02"] = EVA02ModelManager()
     model_managers["dfn5b"] = DFN5BModelManager()
+    model_managers["blip2"] = BLIP2HFAPIModelManager()
 
     # Load models asynchronously
     load_tasks = []
@@ -1076,6 +1078,120 @@ async def get_categories():
     except Exception as e:
         logger.error(f"Error fetching categories: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.post("/analyze-image")
+async def analyze_image(file: UploadFile = File(...)):
+    """Analyze uploaded image using BLIP-2 to generate description and tags"""
+    try:
+        # Check if BLIP-2 model is available
+        if "blip2" not in model_managers:
+            raise HTTPException(status_code=503, detail="BLIP-2 model not available")
+        
+        blip2_manager = model_managers["blip2"]
+        
+        if not blip2_manager.is_loaded:
+            raise HTTPException(status_code=503, detail="BLIP-2 model not loaded")
+
+        # Read and process the uploaded file
+        contents = await file.read()
+        
+        # Open image
+        try:
+            image = PILImage.open(io.BytesIO(contents)).convert("RGB")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid image file: {e}")
+
+        # Generate analysis using BLIP-2
+        analysis = await blip2_manager.analyze_image(image)
+        
+        return {
+            "success": True,
+            "analysis": analysis,
+            "filename": file.filename
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error analyzing image: {e}")
+        raise HTTPException(status_code=500, detail=f"Image analysis failed: {str(e)}")
+
+
+@app.post("/generate-description")
+async def generate_description(file: UploadFile = File(...)):
+    """Generate product description for uploaded image using BLIP-2"""
+    try:
+        # Check if BLIP-2 model is available
+        if "blip2" not in model_managers:
+            raise HTTPException(status_code=503, detail="BLIP-2 model not available")
+        
+        blip2_manager = model_managers["blip2"]
+        
+        if not blip2_manager.is_loaded:
+            raise HTTPException(status_code=503, detail="BLIP-2 model not loaded")
+
+        # Read and process the uploaded file
+        contents = await file.read()
+        
+        # Open image
+        try:
+            image = PILImage.open(io.BytesIO(contents)).convert("RGB")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid image file: {e}")
+
+        # Generate description using BLIP-2
+        description = await blip2_manager.generate_description(image)
+        
+        return {
+            "success": True,
+            "description": description,
+            "filename": file.filename
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating description: {e}")
+        raise HTTPException(status_code=500, detail=f"Description generation failed: {str(e)}")
+
+
+@app.post("/generate-tags")
+async def generate_tags(file: UploadFile = File(...)):
+    """Generate product tags for uploaded image using BLIP-2"""
+    try:
+        # Check if BLIP-2 model is available
+        if "blip2" not in model_managers:
+            raise HTTPException(status_code=503, detail="BLIP-2 model not available")
+        
+        blip2_manager = model_managers["blip2"]
+        
+        if not blip2_manager.is_loaded:
+            raise HTTPException(status_code=503, detail="BLIP-2 model not loaded")
+
+        # Read and process the uploaded file
+        contents = await file.read()
+        
+        # Open image
+        try:
+            image = PILImage.open(io.BytesIO(contents)).convert("RGB")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid image file: {e}")
+
+        # Generate tags using BLIP-2
+        tags = await blip2_manager.generate_tags(image)
+        
+        return {
+            "success": True,
+            "tags": tags,
+            "filename": file.filename
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating tags: {e}")
+        raise HTTPException(status_code=500, detail=f"Tag generation failed: {str(e)}")
 
 
 # Run the server

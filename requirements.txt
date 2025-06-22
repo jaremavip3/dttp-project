@@ -10,3 +10,4 @@ fastapi
 uvicorn[standard]
 open_clip_torch
 timm
+gradio_client>=0.7.0

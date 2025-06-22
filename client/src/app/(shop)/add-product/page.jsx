@@ -1,6 +1,6 @@
 "use client";
 
-import ProductCreator from "@/components/ProductCreator";
+import ProductCreator from "../../../components/ProductCreator";
 
 export default function AddProductPage() {
   return (

@@ -22,15 +22,25 @@ export function useAdvancedProductFilters() {
   // Load products from API on mount
   useEffect(() => {
     const loadProducts = async () => {
+      const startTime = Date.now();
+
       try {
         setIsLoadingProducts(true);
         setProductsError(null);
 
         // Fetch all products from the database
-        const apiProducts = await ProductService.fetchAllProducts({ maxItems: 500 });
+        const apiProducts = await ProductService.fetchAllProducts({ maxItems: 1000 });
 
         // Convert to client format
         const clientProducts = apiProducts.map(ProductService.convertToClientProduct);
+
+        // Ensure minimum loading time to prevent flickering/chunked rendering
+        const minLoadingTime = 500; // 500ms minimum
+        const elapsedTime = Date.now() - startTime;
+
+        if (elapsedTime < minLoadingTime) {
+          await new Promise((resolve) => setTimeout(resolve, minLoadingTime - elapsedTime));
+        }
 
         setProducts(clientProducts);
       } catch (error) {

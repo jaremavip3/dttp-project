@@ -34,11 +34,13 @@ export default function SearchInputComponent({
             }
           }}
           placeholder={placeholder}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            isLoading ? "bg-gray-50 cursor-wait" : ""
+          }`}
           disabled={isLoading}
         />
         <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
-          {query && (
+          {query && !isLoading && (
             <button onClick={handleClear} className="p-1 text-gray-400 hover:text-gray-600" type="button">
               ✕
             </button>
@@ -49,7 +51,11 @@ export default function SearchInputComponent({
             className="p-1 text-gray-600 hover:text-gray-800 disabled:text-gray-400"
             type="button"
           >
-            {isLoading ? "..." : "🔍"}
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+            ) : (
+              "🔍"
+            )}
           </button>
         </div>
       </div>

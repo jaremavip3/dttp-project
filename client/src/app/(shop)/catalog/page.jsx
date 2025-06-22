@@ -41,11 +41,16 @@ export default function CatalogPage() {
           error={clipError}
         />
 
-        {/* Loading state for products */}
-        {isLoadingProducts && (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading products from database...</p>
+        {/* AI Search Loading State */}
+        {isClipSearching && (
+          <div className="max-w-md mx-auto mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-center space-x-3">
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
+              <div className="text-blue-700">
+                <p className="font-medium">🤖 AI Search in Progress</p>
+                <p className="text-sm text-blue-600">Searching with {selectedModel} model...</p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -79,20 +84,48 @@ export default function CatalogPage() {
           {!isLoadingProducts && <span className="ml-2 text-green-600">📊 Database: {products.length} items</span>}
         </div>
 
-        <Grid>
-          {filteredProducts.map((product) => (
-            <GridItem key={product.id} product={product} />
-          ))}
-        </Grid>
-
-        {filteredProducts.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
-            <p className="text-gray-400 text-sm mt-2">
-              {searchQuery ? "Try a different search term or " : ""}
-              Try adjusting your filter criteria.
+        {/* Show loading state or products, not both */}
+        {isLoadingProducts ? (
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-6"></div>
+            <p className="text-gray-600 text-xl font-medium">Loading all products from database...</p>
+            <p className="text-gray-500 text-sm mt-3">
+              Please wait while we fetch all {products.length > 0 ? products.length : "300+"} products
             </p>
+            <div className="mt-4 w-64 mx-auto bg-gray-200 rounded-full h-2">
+              <div className="bg-blue-600 h-2 rounded-full animate-pulse w-3/4"></div>
+            </div>
           </div>
+        ) : (
+          <>
+            <div className={`relative ${isClipSearching ? "opacity-60 pointer-events-none" : ""}`}>
+              <Grid>
+                {filteredProducts.map((product) => (
+                  <GridItem key={product.id} product={product} />
+                ))}
+              </Grid>
+
+              {/* AI Search overlay when searching */}
+              {isClipSearching && (
+                <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent mx-auto mb-2"></div>
+                    <p className="text-blue-700 font-medium">Searching...</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {filteredProducts.length === 0 && !isClipSearching && (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
+                <p className="text-gray-400 text-sm mt-2">
+                  {searchQuery ? "Try a different search term or " : ""}
+                  Try adjusting your filter criteria.
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-// import { SearchInput } from "@/uiLibrary";
 
 export default function SearchInputComponent({
   onSearch,

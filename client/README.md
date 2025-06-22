@@ -1,45 +1,19 @@
-# Minimal Website Template
+# AI Search Client
 
-A clean, minimal website template built with Next.js and Tailwind CSS.
+Next.js frontend for the DTTP Multi-Model AI Search Project.
 
-## Getting Started
-
-First, install dependencies:
+## Quick Start
 
 ```bash
 npm install
-```
-
-Then run the development server:
-
-```bash
 npm run dev
+# Client at: http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Features
 
-## Project Structure
+- **Multi-Model Search**: Compare CLIP, EVA02, and DFN5B results
+- **Product Catalog**: AI-powered semantic search through products
+- **Modern UI**: Built with React 19 + Tailwind CSS
 
-- `/` - Home page
-- `/catalog` - Product catalog with filters
-- `/catalog/[id]` - Individual product pages
-- `/login` - Login page
-- `/register` - Registration page
-- `/checkout` - Checkout page
-- `/dashboard` - User dashboard
-
-## Components
-
-- `Navbar` - Navigation bar
-- `Footer` - Site footer
-- `Header` - Page headers
-- `Filter` - Catalog filters
-- `Grid` - Product grid layout
-
-## Deploy on Vercel
-
-1. Push your code to GitHub
-2. Import your repository on [Vercel](https://vercel.com)
-3. Deploy automatically
-
-The website is ready for deployment and will work out of the box.
+For detailed documentation see [../PROJECT_EXPLANATION.md](../PROJECT_EXPLANATION.md)

@@ -15,7 +15,6 @@ export async function revalidateCacheTags(tags) {
   try {
     tags.forEach((tag) => {
       revalidateTag(tag);
-      console.log(`✅ Revalidated cache tag: ${tag}`);
     });
 
     return {
@@ -66,7 +65,6 @@ export async function revalidatePages(paths) {
   try {
     paths.forEach((path) => {
       revalidatePath(path);
-      console.log(`✅ Revalidated page: ${path}`);
     });
 
     return {
@@ -110,7 +108,7 @@ export async function emergencyCacheClear() {
     "database-stats",
   ];
 
-  const mainPages = ["/", "/catalog", "/clip-test"];
+  const mainPages = ["/", "/catalog"];
 
   try {
     // Revalidate all tags
@@ -118,8 +116,6 @@ export async function emergencyCacheClear() {
 
     // Revalidate main pages
     mainPages.forEach((path) => revalidatePath(path));
-
-    console.log("🧹 Emergency cache clear completed");
 
     return {
       success: true,

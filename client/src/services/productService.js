@@ -3,9 +3,9 @@
  * Enhanced with Next.js native caching + client-side caching for optimal performance
  */
 
-import { CacheManager, CACHE_TYPES } from '@/utils/cache';
+import { CacheManager, CACHE_TYPES } from "@/utils/cache";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 class ProductService {
   /**
@@ -13,52 +13,53 @@ class ProductService {
    * Enhanced with Next.js native caching + client-side cache
    * @param {Object} options - Query options
    * @param {number} options.page - Page number (default: 1)
-   * @param {number} options.per_page - Items per page (default: 20)
+   * @param {number} options.per_page - Items per page (default: 50)
    * @param {string} options.category - Filter by category
    * @param {string} options.split - Filter by split (train/test)
    * @param {boolean} options.useClientCache - Whether to use client-side cache (default: true)
-   * @returns {Promise<Object>} Object containing products array, total count, pagination info
+   * @returns {Promise<Object>} Products response with products array, total, page info
    */
-  static async fetchProducts({ 
-    page = 1, 
-    per_page = 20, 
-    category = null, 
-    split = null,
-    useClientCache = true 
-  } = {}) {
-    // Generate cache key for this specific request
-    const cacheKey = `page_${page}_per_${per_page}_cat_${category || 'all'}_split_${split || 'all'}`;
-    
-    // Try to get from client-side cache first
+  static async fetchProducts({ page = 1, per_page = 50, category = null, split = null, useClientCache = true } = {}) {
+    // Generate cache key based on parameters for client-side cache
+    const cacheKey = `page_${page}_per_${per_page}_cat_${category || "all"}_split_${split || "all"}`;
+
+    // Try to get from client-side cache first (fastest for repeated requests)
     if (useClientCache && CacheManager.isAvailable()) {
       const cached = CacheManager.get(CACHE_TYPES.PRODUCTS, cacheKey);
       if (cached) {
-        return cached;
+        return {
+          ...cached,
+          fromCache: true,
+          cacheType: "client",
+        };
       }
     }
 
     try {
-      // Build query parameters
-      const params = new URLSearchParams({
-        page: page.toString(),
-        per_page: per_page.toString(),
-      });
+      const params = new URLSearchParams();
+      params.append("page", page.toString());
+      params.append("per_page", per_page.toString());
 
-      if (category) params.append('category', category);
-      if (split) params.append('split', split);
+      if (category) {
+        params.append("category", category);
+      }
+
+      if (split) {
+        params.append("split", split);
+      }
 
       // Use Next.js fetch with appropriate caching strategy
       const response = await fetch(`${API_BASE_URL}/products?${params.toString()}`, {
         // Cache products for 15 minutes - balance between freshness and performance
-        next: { 
+        next: {
           revalidate: 900,
           tags: [
-            'products',
+            "products",
             `products-page-${page}`,
             ...(category ? [`products-category-${category}`] : []),
-            ...(split ? [`products-split-${split}`] : [])
-          ]
-        }
+            ...(split ? [`products-split-${split}`] : []),
+          ],
+        },
       });
 
       if (!response.ok) {
@@ -69,23 +70,23 @@ class ProductService {
       const result = {
         ...data,
         fromCache: false,
-        cacheType: 'server'
+        cacheType: "server",
       };
-      
+
       // Cache the result on client-side for immediate repeated access
       if (useClientCache && CacheManager.isAvailable()) {
         CacheManager.set(CACHE_TYPES.PRODUCTS, result, cacheKey);
       }
-      
+
       return result;
     } catch (error) {
       console.error("Error fetching products:", error);
-      
+
       // Check if it's a network error (server not available)
-      if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
-        throw new Error('Unable to connect to server. Please ensure the API server is running.');
+      if (error.message.includes("Failed to fetch") || error.name === "TypeError") {
+        throw new Error("Unable to connect to server. Please ensure the API server is running.");
       }
-      
+
       throw error;
     }
   }
@@ -101,8 +102,8 @@ class ProductService {
    */
   static async fetchAllProducts({ category = null, split = null, maxItems = 1000, useClientCache = true } = {}) {
     // Generate cache key for all products
-    const cacheKey = `all_cat_${category || 'all'}_split_${split || 'all'}_max_${maxItems}`;
-    
+    const cacheKey = `all_cat_${category || "all"}_split_${split || "all"}_max_${maxItems}`;
+
     // Try to get from client-side cache first
     if (useClientCache && CacheManager.isAvailable()) {
       const cached = CacheManager.get(CACHE_TYPES.PRODUCTS, cacheKey);
@@ -112,40 +113,22 @@ class ProductService {
     }
 
     try {
-      const allProducts = [];
-      let page = 1;
-      const per_page = 50; // Reasonable page size
+      // Fetch all products in a single request for better performance
+      const response = await ProductService.fetchProducts({
+        page: 1,
+        per_page: maxItems, // Request all items at once
+        category,
+        split,
+        useClientCache: false, // Don't cache the internal request
+      });
 
-      while (allProducts.length < maxItems) {
-        const response = await ProductService.fetchProducts({
-          page,
-          per_page,
-          category,
-          split,
-          useClientCache: false, // Don't cache individual pages when fetching all
-        });
+      const result = response.products;
 
-        if (response.products.length === 0) {
-          break; // No more products
-        }
-
-        allProducts.push(...response.products);
-
-        // If we got less than per_page items, we've reached the end
-        if (response.products.length < per_page) {
-          break;
-        }
-
-        page++;
-      }
-
-      const result = allProducts.slice(0, maxItems);
-      
       // Cache the complete result on client-side
       if (useClientCache && CacheManager.isAvailable()) {
         CacheManager.set(CACHE_TYPES.PRODUCTS, result, cacheKey);
       }
-      
+
       return result;
     } catch (error) {
       console.error("Error fetching all products:", error);
@@ -174,21 +157,21 @@ class ProductService {
       try {
         const response = await fetch(`${API_BASE_URL}/products/best-sellers?limit=${limit}`, {
           // Cache best sellers for 1 hour (they change less frequently)
-          next: { 
+          next: {
             revalidate: 3600,
-            tags: ['best-sellers', 'products', 'featured-products']
-          }
+            tags: ["best-sellers", "products", "featured-products"],
+          },
         });
 
         if (response.ok) {
           const data = await response.json();
           const result = data.products || data;
-          
+
           // Cache on client-side
           if (useClientCache && CacheManager.isAvailable()) {
             CacheManager.set(CACHE_TYPES.BEST_SELLERS, result);
           }
-          
+
           return result.slice(0, limit);
         }
       } catch (endpointError) {
@@ -198,32 +181,32 @@ class ProductService {
       // Fallback to category-based approach
       const popularCategories = ["shirt", "dress", "shoes", "jacket"];
       const products = [];
-      
+
       for (const category of popularCategories) {
         if (products.length >= limit) break;
-        
-        const response = await ProductService.fetchProducts({ 
-          category, 
+
+        const response = await ProductService.fetchProducts({
+          category,
           per_page: Math.ceil(limit / popularCategories.length),
-          useClientCache: false // Don't cache individual category fetches
+          useClientCache: false, // Don't cache individual category fetches
         });
-        
-        const convertedProducts = response.products.map(product => ({
+
+        const convertedProducts = response.products.map((product) => ({
           ...ProductService.convertToClientProduct(product),
           isBestSeller: true,
           price: Math.round((Math.random() * 50 + 30) * 100) / 100, // Random price 30-80
         }));
-        
+
         products.push(...convertedProducts);
       }
-      
+
       const result = products.slice(0, limit);
-      
+
       // Cache the result
       if (useClientCache && CacheManager.isAvailable()) {
         CacheManager.set(CACHE_TYPES.BEST_SELLERS, result);
       }
-      
+
       return result;
     } catch (error) {
       console.error("Error fetching best sellers:", error);
@@ -250,22 +233,22 @@ class ProductService {
       // Try dedicated endpoint first
       try {
         const response = await fetch(`${API_BASE_URL}/products/new-arrivals?limit=${limit}`, {
-          // Cache new arrivals for 1 hour
-          next: { 
-            revalidate: 3600,
-            tags: ['new-arrivals', 'products', 'featured-products']
-          }
+          // Cache new arrivals for 30 minutes
+          next: {
+            revalidate: 1800,
+            tags: ["new-arrivals", "products", "featured-products"],
+          },
         });
 
         if (response.ok) {
           const data = await response.json();
           const result = data.products || data;
-          
+
           // Cache on client-side
           if (useClientCache && CacheManager.isAvailable()) {
             CacheManager.set(CACHE_TYPES.NEW_ARRIVALS, result);
           }
-          
+
           return result.slice(0, limit);
         }
       } catch (endpointError) {
@@ -273,24 +256,24 @@ class ProductService {
       }
 
       // Fallback approach using test split
-      const response = await ProductService.fetchProducts({ 
+      const response = await ProductService.fetchProducts({
         split: "test", // Use test split as "new arrivals"
         per_page: limit,
-        useClientCache: false // Don't cache individual fetch
+        useClientCache: false, // Don't cache individual fetch
       });
-      
-      const products = response.products.map(product => ({
+
+      const products = response.products.map((product) => ({
         ...ProductService.convertToClientProduct(product),
         isNew: true,
         price: Math.round((Math.random() * 40 + 25) * 100) / 100, // Random price 25-65
       }));
-      
+
       // Cache the result
       if (useClientCache && CacheManager.isAvailable()) {
         CacheManager.set(CACHE_TYPES.NEW_ARRIVALS, products);
       }
-      
-      return products.slice(0, limit);
+
+      return products;
     } catch (error) {
       console.error("Error fetching new arrivals:", error);
       return [];
@@ -298,7 +281,7 @@ class ProductService {
   }
 
   /**
-   * Fetch all product categories
+   * Fetch available categories
    * @param {boolean} useClientCache - Whether to use client-side cache (default: true)
    * @returns {Promise<Array>} Array of category names
    */
@@ -312,25 +295,26 @@ class ProductService {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/categories`, {
-        // Cache categories for 2 hours (they change infrequently)
-        next: { 
-          revalidate: 7200,
-          tags: ['categories', 'products']
-        }
+      const response = await fetch(`${API_BASE_URL}/products/categories`, {
+        // Cache categories for 1 hour (they change infrequently)
+        next: {
+          revalidate: 3600,
+          tags: ["categories", "products-metadata"],
+        },
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const categories = await response.json();
-      
+      const data = await response.json();
+      const categories = data.categories || [];
+
       // Cache the result
       if (useClientCache && CacheManager.isAvailable()) {
         CacheManager.set(CACHE_TYPES.CATEGORIES, categories);
       }
-      
+
       return categories;
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -339,15 +323,16 @@ class ProductService {
   }
 
   /**
-   * Convert API product to client-compatible format
+   * Convert API product to client-side product format
+   * This ensures compatibility with existing client code
    * @param {Object} apiProduct - Product from API
-   * @returns {Object} Client-compatible product object
+   * @returns {Object} Client-formatted product
    */
   static convertToClientProduct(apiProduct) {
     if (!apiProduct) return null;
 
     const metadata = apiProduct.metadata || {};
-    
+
     return {
       id: apiProduct.id || apiProduct.filename,
       name: apiProduct.name || apiProduct.filename?.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ") || "Unnamed Product",
@@ -395,10 +380,10 @@ class ProductService {
    */
   static async revalidateCacheTags(tags) {
     // This would be called from a Server Action
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       // Server-side only
-      const { revalidateTag } = await import('next/cache');
-      tags.forEach(tag => revalidateTag(tag));
+      const { revalidateTag } = await import("next/cache");
+      tags.forEach((tag) => revalidateTag(tag));
     }
   }
 }

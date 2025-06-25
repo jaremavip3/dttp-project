@@ -1,0 +1,54 @@
+# Root level gitignore for DTTP project
+
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Node modules (handled by client/.gitignore but also root level)
+node_modules/
+package-lock.json
+
+# Environment files (sensitive data)
+.env
+.env.local
+.env.production
+.env.development
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# MacOS
+.DS_Store
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Model cache and embeddings (large files)
+model_cache/
+embeddings_cache/
+
+# Logs
+*.log
+logs/
+
+# Test images (if any)
+test_image.jpg
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

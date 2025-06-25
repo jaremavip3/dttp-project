@@ -42,10 +42,10 @@ export default function ProductCreator() {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         image: file,
-        imagePreview: URL.createObjectURL(file)
+        imagePreview: URL.createObjectURL(file),
       }));
     }
   };
@@ -69,9 +69,9 @@ export default function ProductCreator() {
       }
 
       const data = await response.json();
-      
+
       if (data.success && data.analysis) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           description: data.analysis.description || "",
           tags: data.analysis.tags || [],
@@ -83,7 +83,7 @@ export default function ProductCreator() {
     } catch (error) {
       console.error("Error analyzing image:", error);
       // Fallback values
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         description: "Stylish clothing item perfect for your wardrobe.",
         tags: ["clothing", "fashion", "style"],
@@ -99,12 +99,12 @@ export default function ProductCreator() {
     try {
       // Here you would send the product data to your backend
       console.log("Creating product with data:", formData);
-      
+
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       alert("Product created successfully!");
-      
+
       // Reset form
       setFormData({
         image: null,
@@ -120,7 +120,6 @@ export default function ProductCreator() {
       });
       setStep(1);
       setAnalysisComplete(false);
-      
     } catch (error) {
       console.error("Error creating product:", error);
       alert("Error creating product. Please try again.");
@@ -130,7 +129,7 @@ export default function ProductCreator() {
 
   // Get subcategories for selected category
   const getSubcategories = () => {
-    const category = CATEGORIES.find(cat => cat.value === formData.category);
+    const category = CATEGORIES.find((cat) => cat.value === formData.category);
     return category ? category.subcategories : [];
   };
 
@@ -160,13 +159,9 @@ export default function ProductCreator() {
                 alt="Product preview"
                 className="w-full max-w-md mx-auto rounded-lg border"
               />
-              
+
               {!analysisComplete && (
-                <Button
-                  onClick={analyzeImage}
-                  disabled={isAnalyzing}
-                  className="w-full"
-                >
+                <Button onClick={analyzeImage} disabled={isAnalyzing} className="w-full">
                   {isAnalyzing ? "Analyzing Image..." : "Analyze with AI"}
                 </Button>
               )}
@@ -177,27 +172,24 @@ export default function ProductCreator() {
           {analysisComplete && (
             <div className="space-y-4 p-4 bg-green-50 rounded-lg">
               <h3 className="font-semibold text-green-800">AI Analysis Complete!</h3>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">Generated Description:</label>
-                <p className="text-sm text-gray-700 bg-white p-2 rounded border">
-                  {formData.description}
-                </p>
+                <p className="text-sm text-gray-700 bg-white p-2 rounded border">{formData.description}</p>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">Generated Tags:</label>
                 <div className="flex flex-wrap gap-2">
                   {formData.tags.map((tag, index) => (
-                    <Badge key={index} variant="secondary">{tag}</Badge>
+                    <Badge key={index} variant="secondary">
+                      {tag}
+                    </Badge>
                   ))}
                 </div>
               </div>
-              
-              <Button
-                onClick={() => setStep(2)}
-                className="w-full"
-              >
+
+              <Button onClick={() => setStep(2)} className="w-full">
                 Continue to Product Details
               </Button>
             </div>
@@ -215,11 +207,7 @@ export default function ProductCreator() {
       <CardContent className="space-y-6">
         {/* Image Preview */}
         {formData.imagePreview && (
-          <img
-            src={formData.imagePreview}
-            alt="Product"
-            className="w-32 h-32 object-cover rounded-lg border mx-auto"
-          />
+          <img src={formData.imagePreview} alt="Product" className="w-32 h-32 object-cover rounded-lg border mx-auto" />
         )}
 
         {/* Price */}
@@ -230,7 +218,7 @@ export default function ProductCreator() {
             step="0.01"
             min="0"
             value={formData.price}
-            onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+            onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))}
             placeholder="Enter price"
           />
         </div>
@@ -240,15 +228,17 @@ export default function ProductCreator() {
           <label className="block text-sm font-medium mb-2">Category</label>
           <select
             value={formData.category}
-            onChange={(e) => setFormData(prev => ({ 
-              ...prev, 
-              category: e.target.value,
-              subcategory: "" // Reset subcategory when category changes
-            }))}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                category: e.target.value,
+                subcategory: "", // Reset subcategory when category changes
+              }))
+            }
             className="w-full p-2 border border-gray-300 rounded-md"
           >
             <option value="">Select category</option>
-            {CATEGORIES.map(category => (
+            {CATEGORIES.map((category) => (
               <option key={category.value} value={category.value}>
                 {category.label}
               </option>
@@ -262,11 +252,11 @@ export default function ProductCreator() {
             <label className="block text-sm font-medium mb-2">Subcategory</label>
             <select
               value={formData.subcategory}
-              onChange={(e) => setFormData(prev => ({ ...prev, subcategory: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, subcategory: e.target.value }))}
               className="w-full p-2 border border-gray-300 rounded-md"
             >
               <option value="">Select subcategory</option>
-              {getSubcategories().map(subcategory => (
+              {getSubcategories().map((subcategory) => (
                 <option key={subcategory} value={subcategory}>
                   {subcategory.charAt(0).toUpperCase() + subcategory.slice(1)}
                 </option>
@@ -280,11 +270,11 @@ export default function ProductCreator() {
           <label className="block text-sm font-medium mb-2">Gender</label>
           <select
             value={formData.gender}
-            onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
+            onChange={(e) => setFormData((prev) => ({ ...prev, gender: e.target.value }))}
             className="w-full p-2 border border-gray-300 rounded-md"
           >
             <option value="">Select gender</option>
-            {GENDERS.map(gender => (
+            {GENDERS.map((gender) => (
               <option key={gender.value} value={gender.value}>
                 {gender.label}
               </option>
@@ -298,16 +288,16 @@ export default function ProductCreator() {
             <input
               type="checkbox"
               checked={formData.isOnSale}
-              onChange={(e) => setFormData(prev => ({ ...prev, isOnSale: e.target.checked }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, isOnSale: e.target.checked }))}
             />
             <span className="text-sm">On Sale</span>
           </label>
-          
+
           <label className="flex items-center space-x-2">
             <input
               type="checkbox"
               checked={formData.isNew}
-              onChange={(e) => setFormData(prev => ({ ...prev, isNew: e.target.checked }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, isNew: e.target.checked }))}
             />
             <span className="text-sm">New Arrival</span>
           </label>
@@ -318,7 +308,7 @@ export default function ProductCreator() {
           <label className="block text-sm font-medium mb-2">Description</label>
           <textarea
             value={formData.description}
-            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
             rows={3}
             className="w-full p-2 border border-gray-300 rounded-md"
             placeholder="Product description"
@@ -330,14 +320,14 @@ export default function ProductCreator() {
           <label className="block text-sm font-medium mb-2">Tags</label>
           <div className="flex flex-wrap gap-2 mb-2">
             {formData.tags.map((tag, index) => (
-              <Badge 
-                key={index} 
+              <Badge
+                key={index}
                 variant="secondary"
                 className="cursor-pointer"
                 onClick={() => {
                   const newTags = [...formData.tags];
                   newTags.splice(index, 1);
-                  setFormData(prev => ({ ...prev, tags: newTags }));
+                  setFormData((prev) => ({ ...prev, tags: newTags }));
                 }}
               >
                 {tag} ×
@@ -347,14 +337,14 @@ export default function ProductCreator() {
           <Input
             placeholder="Add a tag and press Enter"
             onKeyPress={(e) => {
-              if (e.key === 'Enter') {
+              if (e.key === "Enter") {
                 const value = e.target.value.trim();
                 if (value && !formData.tags.includes(value)) {
-                  setFormData(prev => ({
+                  setFormData((prev) => ({
                     ...prev,
-                    tags: [...prev.tags, value]
+                    tags: [...prev.tags, value],
                   }));
-                  e.target.value = '';
+                  e.target.value = "";
                 }
               }
             }}
@@ -363,14 +353,10 @@ export default function ProductCreator() {
 
         {/* Action Buttons */}
         <div className="flex space-x-4">
-          <Button
-            variant="outline"
-            onClick={() => setStep(1)}
-            className="flex-1"
-          >
+          <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
             Back to Upload
           </Button>
-          
+
           <Button
             onClick={createProduct}
             disabled={isCreating || !formData.price || !formData.category}

@@ -129,7 +129,20 @@ class BLIP2HFAPIModelManager(BaseModelManager):
             logger.info(f"🔍 Debug: Raw API result type: {type(result)}")
             logger.info(f"🔍 Debug: Raw API result: {result}")
 
-            if isinstance(result, tuple) and len(result) >= 2:
+            # Handle list format (chat history)
+            if isinstance(result, list) and len(result) > 0:
+                # Get the last exchange in the chat history
+                last_exchange = result[-1]
+                logger.info(f"🔍 Debug: Last exchange: {last_exchange}")
+                
+                if isinstance(last_exchange, list) and len(last_exchange) >= 2:
+                    # Extract bot response (second element)
+                    bot_response = last_exchange[1]
+                    logger.info(f"🔍 Debug: Bot response: {bot_response}")
+                    return str(bot_response).strip()
+                
+            # Handle tuple format
+            elif isinstance(result, tuple) and len(result) >= 2:
                 # The chat result is a tuple where the second element contains the chat history
                 chat_history = result[1]
                 logger.info(f"🔍 Debug: Chat history type: {type(chat_history)}")
@@ -145,6 +158,10 @@ class BLIP2HFAPIModelManager(BaseModelManager):
                         logger.info(f"🔍 Debug: Bot response: {bot_response}")
                         return str(bot_response).strip()
 
+            # Direct string response
+            elif isinstance(result, str):
+                return result.strip()
+
             # Fallback to string conversion
             fallback = str(result).strip()
             logger.info(f"🔍 Debug: Using fallback: {fallback}")
@@ -159,6 +176,19 @@ class BLIP2HFAPIModelManager(BaseModelManager):
         if not text:
             return "Stylish clothing item perfect for your wardrobe."
 
+        # Remove common prompt phrases that might appear in response
+        prompt_phrases = [
+            "describe this clothing item for an online store",
+            "what type of garment is it",
+            "what color",
+            "what style or features",
+            "write 1-2 sentences"
+        ]
+        
+        text_lower = text.lower()
+        for phrase in prompt_phrases:
+            text_lower = text_lower.replace(phrase, "")
+        
         # Remove common AI response prefixes
         prefixes_to_remove = [
             "this is",
@@ -175,12 +205,18 @@ class BLIP2HFAPIModelManager(BaseModelManager):
             "it looks like",
         ]
 
-        text_lower = text.lower()
         for prefix in prefixes_to_remove:
             if text_lower.startswith(prefix):
-                text = text[len(prefix) :].strip()
+                text = text[len(prefix):].strip()
+                text_lower = text.lower()
                 break
 
+        # Clean up the text
+        text = text.strip()
+        
+        # Remove any remaining bracket content or quote marks
+        text = re.sub(r'[\[\]"\']', '', text)
+        
         # Capitalize first letter
         if text:
             text = text[0].upper() + text[1:]
@@ -188,6 +224,11 @@ class BLIP2HFAPIModelManager(BaseModelManager):
         # Ensure it ends with a period
         if text and not text.endswith("."):
             text += "."
+
+        # If the result is still too short or contains prompt text, use fallback
+        if (len(text) < 10 or 
+            any(phrase in text.lower() for phrase in ["describe", "what type", "what color", "write"])):
+            return "Stylish clothing item perfect for your wardrobe."
 
         return text
 
@@ -199,31 +240,54 @@ class BLIP2HFAPIModelManager(BaseModelManager):
             logger.info("🏷️ Debug: No text provided, using fallback")
             return self._get_clothing_fallback_tags()
 
-        # Clean the text
+        # Clean the text - remove any prompt text that might be included
         text = text.lower().strip()
+        
+        # Remove common prompt phrases that might appear in response
+        prompt_phrases = [
+            "what type of clothing is this",
+            "tell me:",
+            "answer with",
+            "examples:",
+            "separated by commas",
+            "garment",
+            "main color",
+            "style or fit",
+            "write 1-2 sentences"
+        ]
+        
+        for phrase in prompt_phrases:
+            text = text.replace(phrase, "")
+        
+        # Clean up extra characters and spaces
+        text = re.sub(r'[^\w\s,.-]', '', text)
+        text = re.sub(r'\s+', ' ', text).strip()
+        
+        logger.info(f"🏷️ Debug: Cleaned text: '{text}'")
 
         # Try to find comma-separated tags first
         if "," in text:
             tags = [tag.strip() for tag in text.split(",")]
-            tags = [
-                self._clean_tag(tag) for tag in tags if tag and len(tag.strip()) > 1
-            ]
-            tags = [tag for tag in tags if tag]  # Remove empty tags
-            logger.info(f"🏷️ Debug: Found comma-separated tags: {tags}")
-            if len(tags) >= 3:
-                return tags[:3]
-
-        # Try to find tags separated by other delimiters
-        for delimiter in ["\n", ";", "•", "-", "|"]:
-            if delimiter in text:
-                tags = [tag.strip() for tag in text.split(delimiter)]
-                tags = [
-                    self._clean_tag(tag) for tag in tags if tag and len(tag.strip()) > 1
-                ]
-                tags = [tag for tag in tags if tag]  # Remove empty tags
-                logger.info(f"🏷️ Debug: Found {delimiter}-separated tags: {tags}")
-                if len(tags) >= 3:
-                    return tags[:3]
+            # Filter out empty, very short, or prompt-like tags
+            clean_tags = []
+            for tag in tags:
+                tag = self._clean_tag(tag)
+                if (tag and len(tag) > 1 and len(tag) < 20 and 
+                    not any(phrase in tag.lower() for phrase in ["what", "tell", "answer", "example"])):
+                    clean_tags.append(tag)
+            
+            logger.info(f"🏷️ Debug: Found comma-separated tags: {clean_tags}")
+            if len(clean_tags) >= 3:
+                return clean_tags[:3]
+            elif len(clean_tags) > 0:
+                # If we have some good tags but not enough, supplement with clothing terms
+                remaining_needed = 3 - len(clean_tags)
+                clothing_terms = self._extract_clothing_terms(text)
+                for term in clothing_terms:
+                    if term not in clean_tags and len(clean_tags) < 3:
+                        clean_tags.append(term)
+                if len(clean_tags) >= 3:
+                    return clean_tags[:3]
 
         # Try to extract specific clothing terms from the text
         clothing_tags = self._extract_clothing_terms(text)
@@ -231,65 +295,33 @@ class BLIP2HFAPIModelManager(BaseModelManager):
             logger.info(f"🏷️ Debug: Extracted clothing terms: {clothing_tags}")
             return clothing_tags[:3]
 
-        # Extract any meaningful words as fallback, but prioritize clothing terms
-        words = re.findall(r"\b[a-z]{3,}\b", text)
-        # Filter out non-clothing related words
+        # Extract meaningful words as fallback
+        words = re.findall(r'\b[a-z]{3,15}\b', text)
+        # Filter out non-clothing related words and prompt words
         non_clothing_words = [
-            "the",
-            "and",
-            "for",
-            "with",
-            "this",
-            "that",
-            "image",
-            "photo",
-            "picture",
-            "item",
-            "shows",
-            "appears",
-            "looks",
-            "seems",
-            "visible",
-            "seen",
+            "the", "and", "for", "with", "this", "that", "image", "photo", "picture", 
+            "item", "shows", "appears", "looks", "seems", "visible", "seen", "what",
+            "type", "tell", "answer", "example", "separated", "commas", "sentences"
         ]
-        words = [
-            self._clean_tag(word) for word in words if word not in non_clothing_words
-        ]
-        words = [word for word in words if word]  # Remove empty
-
-        # Prioritize clothing-related words
-        clothing_related_words = []
-        other_words = []
-
-        clothing_keywords = [
-            "sleeve",
-            "collar",
-            "button",
-            "pocket",
-            "fabric",
-            "material",
-            "fit",
-            "style",
-            "color",
-            "neck",
-            "hem",
-            "pattern",
-        ]
-
+        
+        good_words = []
         for word in words:
-            if any(
-                keyword in word for keyword in clothing_keywords
-            ) or word in self._extract_clothing_terms(word):
-                clothing_related_words.append(word)
-            else:
-                other_words.append(word)
+            cleaned_word = self._clean_tag(word)
+            if (cleaned_word and cleaned_word not in non_clothing_words and 
+                len(cleaned_word) > 2 and len(cleaned_word) < 15):
+                good_words.append(cleaned_word)
+        
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_words = []
+        for word in good_words:
+            if word not in seen:
+                seen.add(word)
+                unique_words.append(word)
 
-        # Prefer clothing-related words
-        final_words = (clothing_related_words + other_words)[:3]
-
-        if len(final_words) >= 3:
-            logger.info(f"🏷️ Debug: Using word extraction: {final_words}")
-            return final_words[:3]
+        if len(unique_words) >= 3:
+            logger.info(f"🏷️ Debug: Using word extraction: {unique_words[:3]}")
+            return unique_words[:3]
 
         # Default fallback with better clothing terms
         logger.info("🏷️ Debug: Using fallback tags")

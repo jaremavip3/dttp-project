@@ -11,3 +11,8 @@ uvicorn[standard]
 open_clip_torch
 timm
 gradio_client>=0.7.0
+supabase>=2.0.0
+sqlalchemy>=2.0.0
+asyncpg>=0.28.0
+python-dotenv>=1.0.0
+pydantic>=2.0.0

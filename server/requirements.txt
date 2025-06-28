@@ -1,0 +1,29 @@
+# Core server framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# Machine Learning models
+sentence-transformers==2.2.2
+torch>=2.0.0
+torchvision>=0.15.0
+transformers>=4.21.0
+open_clip_torch
+timm
+
+# Image processing
+pillow>=9.0.0
+
+# Data processing
+numpy>=1.21.0
+
+# Database
+sqlalchemy>=2.0.0
+asyncpg>=0.28.0
+
+# External APIs
+supabase>=2.0.0
+gradio_client>=0.7.0
+
+# Configuration
+python-dotenv>=1.0.0
+pydantic>=2.0.0

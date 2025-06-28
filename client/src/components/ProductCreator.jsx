@@ -98,7 +98,6 @@ export default function ProductCreator() {
     setIsCreating(true);
     try {
       // Here you would send the product data to your backend
-      console.log("Creating product with data:", formData);
 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));

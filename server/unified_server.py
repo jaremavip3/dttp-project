@@ -33,7 +33,7 @@ from core.database import (
     async_session_maker,
 )
 from core.db_service import DatabaseService
-from core.models import Image as DBImage
+from core.models import Image as DBImage, Product as DBProduct
 from sqlalchemy import select, func
 
 # Initialize settings

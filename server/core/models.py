@@ -2,7 +2,17 @@
 Database models for images and embeddings
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey, Index
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    Text,
+    ForeignKey,
+    Index,
+    Boolean,
+    Numeric,
+)
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -29,9 +39,12 @@ class Image(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # Relationship to embeddings
+    # Relationship to embeddings and products
     embeddings = relationship(
         "ImageEmbedding", back_populates="image", cascade="all, delete-orphan"
+    )
+    products = relationship(
+        "Product", back_populates="image", cascade="all, delete-orphan"
     )
 
     # Index for fast filename lookups
@@ -70,6 +83,41 @@ class ImageEmbedding(Base):
         Index("idx_embeddings_created_at", "created_at"),
         # Unique constraint to prevent duplicate embeddings
         Index("idx_unique_image_model", "image_id", "model_name", unique=True),
+    )
+
+
+class Product(Base):
+    """Product information table"""
+
+    __tablename__ = "products"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    image_id = Column(
+        UUID(as_uuid=True), ForeignKey("images.id", ondelete="CASCADE"), nullable=False
+    )
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    price = Column(Numeric(10, 2), nullable=False)  # Price with 2 decimal places
+    category = Column(String(100), nullable=False)
+    subcategory = Column(String(100), nullable=True)
+    gender = Column(String(20), nullable=True)  # women, men, unisex
+    tags = Column(ARRAY(String), nullable=True)  # Array of tags
+    is_on_sale = Column(Boolean, default=False)
+    is_new = Column(Boolean, default=False)
+    product_metadata = Column(Text, nullable=True)  # JSON metadata
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Relationship to image
+    image = relationship("Image", back_populates="products")
+
+    # Indexes for fast queries
+    __table_args__ = (
+        Index("idx_products_category", "category"),
+        Index("idx_products_gender", "gender"),
+        Index("idx_products_price", "price"),
+        Index("idx_products_created_at", "created_at"),
+        Index("idx_products_name", "name"),
     )
 
 

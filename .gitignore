@@ -43,6 +43,16 @@ logs/
 # Test images (if any)
 test_image.jpg
 
+# Debug and documentation files
+*DEBUG*.md
+*CLEANUP*.md
+*INTEGRATION*.md
+*IMPROVEMENTS*.md
+*TEST*.md
+*STATUS*.md
+*EXPLANATION*.md
+*UPDATE*.md
+
 # Build artifacts
 build/
 dist/

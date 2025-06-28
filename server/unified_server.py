@@ -668,6 +668,35 @@ async def get_database_stats():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/embeddings/{model}")
+async def get_embeddings_for_model(model: str):
+    """Get all embeddings for a specific model (for client-side use)"""
+    if model not in model_managers:
+        raise HTTPException(status_code=404, detail=f"Model '{model}' not found")
+
+    try:
+        async with get_async_session() as session:
+            # Get all embeddings for the specified model
+            embeddings = await DatabaseService.get_embeddings_by_model(session, model)
+            
+            # Convert to dictionary format
+            embeddings_dict = {}
+            for embedding_obj in embeddings:
+                if embedding_obj.image:
+                    embeddings_dict[embedding_obj.image.filename] = embedding_obj.embedding
+            
+            return {
+                "model": model,
+                "embeddings": embeddings_dict,
+                "count": len(embeddings_dict),
+                "timestamp": datetime.utcnow().isoformat()
+            }
+
+    except Exception as e:
+        logger.error(f"Error getting embeddings for {model}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/embeddings/generate/{model}")
 async def generate_embeddings_for_model(
     model: str, background_tasks: BackgroundTasks, force_regenerate: bool = False

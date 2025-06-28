@@ -11,7 +11,7 @@ export function useAdvancedProductFilters() {
   const [isClipSearching, setIsClipSearching] = useState(false);
   const [clipError, setClipError] = useState(null);
   const [activeFilters, setActiveFilters] = useState([]);
-  const [selectedModel, setSelectedModel] = useState("EVA02");
+  const [selectedModel, setSelectedModel] = useState("CLIENT-CLIP");
   const [lastSearchModel, setLastSearchModel] = useState(null);
 
   // New state for database products
@@ -67,7 +67,8 @@ export function useAdvancedProductFilters() {
     if (query.trim()) {
       setIsClipSearching(true);
       try {
-        const clipSearchResults = await ClipService.searchProducts(query, products, selectedModel);
+        // Use the new V3 search that supports both client-side and server-side models
+        const clipSearchResults = await ClipService.searchProductsV3(query, products, selectedModel);
         setClipResults(clipSearchResults.products);
         setLastSearchModel(selectedModel);
       } catch (error) {

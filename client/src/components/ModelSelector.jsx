@@ -15,12 +15,18 @@ export default function ModelSelector({ selectedModel, onModelChange, className 
   const checkModelHealth = async () => {
     setIsChecking(true);
     try {
-      const health = await ClipService.getAllHealthStatuses();
+      const health = await ClipService.getAllModelStatuses();
       setModelHealth(health);
     } catch (error) {
       console.error("Error checking model health:", error);
       // Set a fallback state when server is not available
       setModelHealth({
+        "CLIENT-CLIP": { 
+          status: "healthy", 
+          name: "CLIENT-CLIP", 
+          isClientSide: true,
+          canRunLocally: true 
+        },
         CLIP: { status: "error", error: "Server not available", name: "CLIP" },
         EVA02: { status: "error", error: "Server not available", name: "EVA02" },
         DFN5B: { status: "error", error: "Server not available", name: "DFN5B" },
@@ -33,13 +39,43 @@ export default function ModelSelector({ selectedModel, onModelChange, className 
   const getStatusIcon = (model) => {
     const health = modelHealth[model];
     if (!health) return "";
+    
+    // Different icons for client-side vs server-side
+    if (health.isClientSide) {
+      if (health.status === "healthy") return "🏠"; // Local/home icon
+      if (health.status === "loading") return "⏳"; // Loading
+      return "🔴"; // Error
+    }
+    
+    // Server-side models
     return health.status === "healthy" ? "●" : "○";
   };
 
   const getStatusColor = (model) => {
     const health = modelHealth[model];
     if (!health) return "text-gray-400";
+    
+    if (health.isClientSide) {
+      if (health.status === "healthy") return "text-green-600";
+      if (health.status === "loading") return "text-yellow-500";
+      return "text-red-500";
+    }
+    
     return health.status === "healthy" ? "text-green-500" : "text-red-400";
+  };
+
+  const getStatusText = (model) => {
+    const health = modelHealth[model];
+    if (!health) return "Unknown";
+    
+    if (health.isClientSide) {
+      if (health.status === "healthy") return "Local";
+      if (health.status === "loading") return "Loading";
+      return "Error";
+    }
+    
+    if (health.status === "healthy") return "Ready";
+    return health.error ? "Offline" : "Loading";
   };
 
   return (
@@ -55,7 +91,7 @@ export default function ModelSelector({ selectedModel, onModelChange, className 
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {Object.entries(AI_MODELS).map(([key, model]) => {
           const isSelected = selectedModel === key;
           const health = modelHealth[key];
@@ -84,7 +120,7 @@ export default function ModelSelector({ selectedModel, onModelChange, className 
 
               <div className="flex items-center justify-between text-xs">
                 <span className={`${getStatusColor(key)} font-medium`}>
-                  {health?.status === "healthy" ? "Ready" : health?.error ? "Offline" : "Loading"}
+                  {getStatusText(key)}
                 </span>
                 {isSelected && <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>}
               </div>

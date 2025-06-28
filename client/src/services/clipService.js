@@ -1,28 +1,39 @@
 // AI Search Service for the unified multi-model server
 // Enhanced with Next.js native caching strategies
 import { CacheManager, CACHE_TYPES } from "@/utils/cache";
+import clientClipService from "./clientClipService";
 
 const UNIFIED_SERVER_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 // Available AI models (all served from unified server)
 export const AI_MODELS = {
+  "CLIENT-CLIP": {
+    name: "CLIENT-CLIP",
+    url: "local",
+    endpoint: "/client-side",
+    description: "CLIP-Base running locally in browser (Xenova/clip-vit-base-patch16)",
+    isClientSide: true,
+  },
   CLIP: {
     name: "CLIP",
     url: UNIFIED_SERVER_URL,
     endpoint: "/search/clip",
     description: "OpenAI CLIP - General purpose vision-language model",
+    isClientSide: false,
   },
   EVA02: {
     name: "EVA02",
     url: UNIFIED_SERVER_URL,
     endpoint: "/search/eva02",
     description: "timm/eva02_large_patch14_clip_336.merged2b_s6b_b61k",
+    isClientSide: false,
   },
   DFN5B: {
     name: "DFN5B",
     url: UNIFIED_SERVER_URL,
     endpoint: "/search/dfn5b",
     description: "DFN5B-CLIP ViT-H-14 by Apple",
+    isClientSide: false,
   },
 };
 
@@ -379,6 +390,110 @@ class ClipService {
       const { revalidateTag } = await import("next/cache");
       tags.forEach((tag) => revalidateTag(tag));
     }
+  }
+
+  /**
+   * Search for products using client-side or server-side AI models
+   * @param {string} query - The search query text
+   * @param {Array} products - Available products (for client-side search)
+   * @param {string} model - The model to use
+   * @param {number} topK - Number of results to return
+   * @param {boolean} useClientCache - Whether to use client-side cache
+   * @returns {Promise<Object>} Search results
+   */
+  static async searchProductsV3(query, products = [], model = "CLIP", topK = 10, useClientCache = true) {
+    const startTime = Date.now();
+    
+    // Check if this is a client-side model
+    const modelConfig = AI_MODELS[model];
+    if (!modelConfig) {
+      throw new Error(`Unknown model: ${model}. Available models: ${Object.keys(AI_MODELS).join(", ")}`);
+    }
+
+    // Handle client-side CLIP model
+    if (modelConfig.isClientSide && model === "CLIENT-CLIP") {
+      try {
+        console.log(`🤖 Using client-side CLIP search for: "${query}"`);
+        
+        const result = await clientClipService.searchProducts(query, products, topK);
+        result.processingTime = Date.now() - startTime;
+        
+        return result;
+      } catch (error) {
+        console.warn(`⚠️ Client-side CLIP failed, falling back to server CLIP: ${error.message}`);
+        // Fall back to server-side CLIP
+        return this.searchProductsV2(query, "CLIP", topK, useClientCache);
+      }
+    }
+
+    // Use existing server-side search for other models
+    return this.searchProductsV2(query, model, topK, useClientCache);
+  }
+
+  /**
+   * Get status of all available models (client-side and server-side)
+   * @returns {Promise<Object>} Status of all models
+   */
+  static async getAllModelStatuses() {
+    try {
+      // Get server-side model statuses
+      const serverStatuses = await this.getAllHealthStatuses();
+      
+      // Get client-side model status
+      const clientClipStatus = clientClipService.getStatus();
+      
+      // Determine status based on loading/loaded state
+      let status = "error";
+      if (clientClipStatus.isLoading) {
+        status = "loading";
+      } else if (clientClipStatus.isLoaded) {
+        // Model is healthy if loaded, even without embeddings
+        status = "healthy";
+      }
+      
+      // Combine statuses
+      const allStatuses = {
+        ...serverStatuses,
+        "CLIENT-CLIP": {
+          name: "CLIENT-CLIP",
+          status: status,
+          loaded: clientClipStatus.isLoaded,
+          embeddings_count: clientClipStatus.embeddingsCount,
+          model_info: `${clientClipStatus.modelName} (${clientClipStatus.modelSize})`,
+          error: clientClipStatus.modelError,
+          isClientSide: true,
+          canRunLocally: clientClipStatus.canRunLocally,
+          searchMode: clientClipStatus.searchMode
+        }
+      };
+
+      return allStatuses;
+    } catch (error) {
+      console.error("Error getting model statuses:", error);
+      return {};
+    }
+  }
+
+  /**
+   * Initialize client-side CLIP model
+   * @returns {Promise<boolean>} Success status
+   */
+  static async initializeClientClip() {
+    try {
+      console.log('🚀 Initializing client-side CLIP model...');
+      return await clientClipService.preload();
+    } catch (error) {
+      console.error('❌ Failed to initialize client-side CLIP:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Check if client-side CLIP is available and ready
+   * @returns {boolean} Availability status
+   */
+  static isClientClipAvailable() {
+    return clientClipService.isAvailable();
   }
 }
 

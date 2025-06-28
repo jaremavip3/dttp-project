@@ -18,19 +18,13 @@ export const AI_MODELS = {
     endpoint: "/search/eva02",
     description: "timm/eva02_large_patch14_clip_336.merged2b_s6b_b61k",
   },
-  DFN5B: {
-    name: "DFN5B",
-    url: UNIFIED_SERVER_URL,
-    endpoint: "/search/dfn5b",
-    description: "DFN5B-CLIP ViT-H-14 by Apple",
-  },
 };
 
 class ClipService {
   /**
    * Search for products using selected AI model with Next.js caching
    * @param {string} query - The search query text
-   * @param {string} model - The model to use (e.g., 'CLIP', 'EVA02', 'DFN5B')
+   * @param {string} model - The model to use (e.g., 'CLIP', 'EVA02')
    * @param {number} topK - Number of top results to return
    * @param {boolean} useClientCache - Whether to use client-side cache (default: true)
    * @returns {Promise<Array>} Array of search results with similarity scores
@@ -148,9 +142,6 @@ class ClipService {
             case "eva02":
               clientModelName = "EVA02";
               break;
-            case "dfn5b":
-              clientModelName = "DFN5B";
-              break;
             default:
               clientModelName = model.name.toUpperCase();
           }
@@ -259,7 +250,7 @@ class ClipService {
    * Search for products using selected AI model (legacy method - kept for backward compatibility)
    * @param {string} query - The search query text
    * @param {Array} products - Local products array (ignored in new version)
-   * @param {string} model - The model to use (e.g., 'CLIP', 'EVA02', 'DFN5B')
+   * @param {string} model - The model to use (e.g., 'CLIP', 'EVA02')
    * @param {number} topK - Number of top results to return
    * @returns {Promise<Array>} Array of products with similarity scores
    */

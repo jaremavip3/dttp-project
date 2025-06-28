@@ -43,7 +43,7 @@ export async function revalidateProductCaches() {
  * Revalidate all AI search-related caches
  */
 export async function revalidateSearchCaches() {
-  const searchTags = ["ai-search", "search-clip", "search-eva02", "search-dfn5b", "product-search"];
+  const searchTags = ["ai-search", "search-clip", "search-eva02", "product-search"];
 
   return await revalidateCacheTags(searchTags);
 }
@@ -52,7 +52,7 @@ export async function revalidateSearchCaches() {
  * Revalidate server health caches
  */
 export async function revalidateHealthCaches() {
-  const healthTags = ["health-all", "health-clip", "health-eva02", "health-dfn5b", "server-status"];
+  const healthTags = ["health-all", "health-clip", "health-eva02", "server-status"];
 
   return await revalidateCacheTags(healthTags);
 }
@@ -96,7 +96,6 @@ export async function emergencyCacheClear() {
     "product-search",
     "search-clip",
     "search-eva02",
-    "search-dfn5b",
     // Server
     "health-all",
     "server-status",

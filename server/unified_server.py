@@ -1,6 +1,6 @@
 """
 Multi-Model AI Search Server
-A unified FastAPI server managing CLIP, EVA02, and DFN5B models with database-backed embeddings
+A unified FastAPI server managing CLIP and EVA02 models with database-backed embeddings
 """
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks, UploadFile, File, Depends
@@ -22,7 +22,6 @@ import io
 # Import model managers
 from models.clip_model import CLIPModelManager
 from models.eva02_model import EVA02ModelManager
-from models.dfn5b_model import DFN5BModelManager
 from models.blip2_hf_api_model import BLIP2HFAPIModelManager
 from core.config import Settings
 from core.logging_config import setup_logging
@@ -61,11 +60,19 @@ async def lifespan(app: FastAPI):
         logger.info("🔄 Server will continue with file-based fallback for development")
         # Don't raise here - let the server start without database
 
-    # Initialize model managers
-    model_managers["clip"] = CLIPModelManager()
-    model_managers["eva02"] = EVA02ModelManager()
-    model_managers["dfn5b"] = DFN5BModelManager()
-    model_managers["blip2"] = BLIP2HFAPIModelManager()
+    # Initialize model managers based on environment variables
+    enable_clip = os.getenv("ENABLE_CLIP", "true").lower() == "true"
+    enable_eva02 = os.getenv("ENABLE_EVA02", "true").lower() == "true"
+    enable_blip2 = os.getenv("ENABLE_BLIP2", "true").lower() == "true"
+
+    if enable_clip:
+        model_managers["clip"] = CLIPModelManager()
+    if enable_eva02:
+        model_managers["eva02"] = EVA02ModelManager()
+    if enable_blip2:
+        model_managers["blip2"] = BLIP2HFAPIModelManager()
+
+    logger.info(f"🎯 Loading models: {list(model_managers.keys())}")
 
     # Load models asynchronously
     load_tasks = []
@@ -95,7 +102,7 @@ async def lifespan(app: FastAPI):
 # Initialize FastAPI app
 app = FastAPI(
     title="Multi-Model AI Search Server",
-    description="Unified server for CLIP, EVA02, and DFN5B semantic search models",
+    description="Unified server for CLIP and EVA02 semantic search models",
     version="2.0.0",
     lifespan=lifespan,
     docs_url="/docs",

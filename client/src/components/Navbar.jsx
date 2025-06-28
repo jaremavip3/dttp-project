@@ -9,8 +9,6 @@ export default function Navbar() {
   const navigation = [
     { name: "Home", href: "/" },
     { name: "Catalog", href: "/catalog" },
-    { name: "Add Product", href: "/add-product" },
-    { name: "AI Tools", href: "/ai" },
   ];
 
   return (
@@ -41,14 +39,12 @@ export default function Navbar() {
 
           {/* Right side actions */}
           <div className="flex items-center space-x-4">
-            <Link href="/login" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-              Login
-            </Link>
+            {/* Add Product button (emphasized) */}
             <Link
-              href="/register"
+              href="/add-product"
               className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors"
             >
-              Sign Up
+              Add Product
             </Link>
           </div>
 

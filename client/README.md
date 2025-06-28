@@ -12,7 +12,7 @@ npm run dev
 
 ## Features
 
-- **Multi-Model Search**: Compare CLIP, EVA02, and DFN5B results
+- **Multi-Model Search**: Compare CLIP and EVA02 results
 - **Product Catalog**: AI-powered semantic search through products
 - **Modern UI**: Built with React 19 + Tailwind CSS
 

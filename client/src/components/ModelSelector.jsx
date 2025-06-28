@@ -23,7 +23,6 @@ export default function ModelSelector({ selectedModel, onModelChange, className 
       setModelHealth({
         CLIP: { status: "error", error: "Server not available", name: "CLIP" },
         EVA02: { status: "error", error: "Server not available", name: "EVA02" },
-        DFN5B: { status: "error", error: "Server not available", name: "DFN5B" },
       });
     } finally {
       setIsChecking(false);
@@ -55,42 +54,45 @@ export default function ModelSelector({ selectedModel, onModelChange, className 
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
-        {Object.entries(AI_MODELS).map(([key, model]) => {
-          const isSelected = selectedModel === key;
-          const health = modelHealth[key];
-          const isHealthy = health?.status === "healthy";
+      <div className="flex justify-center">
+        <div className="grid grid-cols-2 gap-2">
+          {Object.entries(AI_MODELS).map(([key, model]) => {
+            const isSelected = selectedModel === key;
+            const health = modelHealth[key];
+            const isHealthy = health?.status === "healthy";
 
-          return (
-            <button
-              key={key}
-              onClick={() => onModelChange(key)}
-              disabled={!isHealthy}
-              className={`
-                relative p-2.5 rounded-lg text-left transition-all duration-200
-                backdrop-blur-sm border
-                ${
-                  isSelected
-                    ? "bg-blue-50/80 border-blue-200/60 shadow-sm"
-                    : "bg-white/60 border-gray-200/40 hover:bg-gray-50/80 hover:border-gray-300/60"
-                }
-                ${!isHealthy ? "opacity-40 cursor-not-allowed hover:bg-white/60" : "cursor-pointer"}
-              `}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-medium text-sm text-gray-800">{model.name}</span>
-                <span className="text-sm">{getStatusIcon(key)}</span>
-              </div>
+            return (
+              <button
+                key={key}
+                onClick={() => onModelChange(key)}
+                disabled={!isHealthy}
+                className={`
+                  w-40
+                  relative p-2.5 rounded-lg text-left transition-all duration-200
+                  backdrop-blur-sm border
+                  ${
+                    isSelected
+                      ? "bg-blue-50/80 border-blue-200/60 shadow-sm"
+                      : "bg-white/60 border-gray-200/40 hover:bg-gray-50/80 hover:border-gray-300/60"
+                  }
+                  ${!isHealthy ? "opacity-40 cursor-not-allowed hover:bg-white/60" : "cursor-pointer"}
+                `}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-medium text-sm text-gray-800">{model.name}</span>
+                  <span className="text-sm">{getStatusIcon(key)}</span>
+                </div>
 
-              <div className="flex items-center justify-between text-xs">
-                <span className={`${getStatusColor(key)} font-medium`}>
-                  {health?.status === "healthy" ? "Ready" : health?.error ? "Offline" : "Loading"}
-                </span>
-                {isSelected && <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>}
-              </div>
-            </button>
-          );
-        })}
+                <div className="flex items-center justify-between text-xs">
+                  <span className={`${getStatusColor(key)} font-medium`}>
+                    {health?.status === "healthy" ? "Ready" : health?.error ? "Offline" : "Loading"}
+                  </span>
+                  {isSelected && <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>}
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {Object.values(modelHealth).every((h) => h?.status !== "healthy") && !isChecking && (

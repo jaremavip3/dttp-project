@@ -38,19 +38,6 @@ export default function CatalogPage() {
           error={clipError}
         />
 
-        {/* AI Search Loading State */}
-        {isClipSearching && (
-          <div className="max-w-md mx-auto mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center justify-center space-x-3">
-              <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
-              <div className="text-blue-700">
-                <p className="font-medium">🤖 AI Search in Progress</p>
-                <p className="text-sm text-blue-600">Searching with {selectedModel} model...</p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Error state for products */}
         {productsError && (
           <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -104,10 +91,9 @@ export default function CatalogPage() {
 
               {/* AI Search overlay when searching */}
               {isClipSearching && (
-                <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
+                <div className="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center rounded-lg">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent mx-auto mb-2"></div>
-                    <p className="text-blue-700 font-medium">Searching...</p>
+                    <p className="text-blue-700 font-medium">🤖 Searching with {selectedModel}...</p>
                   </div>
                 </div>
               )}

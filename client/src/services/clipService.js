@@ -1,3 +1,5 @@
+// ВИПРАВЛЕНИЙ clipService.js - додайте ngrok header до всіх fetch запитів
+
 // AI Search Service for the unified multi-model server
 // Enhanced with Next.js native caching strategies
 import { CacheManager, CACHE_TYPES } from "@/utils/cache";
@@ -23,11 +25,6 @@ export const AI_MODELS = {
 class ClipService {
   /**
    * Search for products using selected AI model with Next.js caching
-   * @param {string} query - The search query text
-   * @param {string} model - The model to use (e.g., 'CLIP', 'EVA02')
-   * @param {number} topK - Number of top results to return
-   * @param {boolean} useClientCache - Whether to use client-side cache (default: true)
-   * @returns {Promise<Array>} Array of search results with similarity scores
    */
   static async searchImages(query, model = "CLIP", topK = 10, useClientCache = true) {
     const modelConfig = AI_MODELS[model];
@@ -35,10 +32,8 @@ class ClipService {
       throw new Error(`Unknown model: ${model}. Available models: ${Object.keys(AI_MODELS).join(", ")}`);
     }
 
-    // Generate cache key for client-side cache
     const cacheKey = CacheManager.generateSearchKey(query, model, { topK });
 
-    // Try to get from client-side cache first (faster for repeated searches)
     if (useClientCache && CacheManager.isAvailable()) {
       const cached = CacheManager.get(CACHE_TYPES.SEARCH_RESULTS, cacheKey);
       if (cached) {
@@ -51,11 +46,12 @@ class ClipService {
     }
 
     try {
-      // Use regular fetch for client-side requests
+      // ✅ ДОДАЙТЕ NGROK HEADER
       const response = await fetch(`${modelConfig.url}${modelConfig.endpoint}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true", // 🔥 КЛЮЧОВЕ ВИПРАВЛЕННЯ
         },
         body: JSON.stringify({
           query: query,
@@ -75,7 +71,6 @@ class ClipService {
         cacheType: "none",
       };
 
-      // Cache the result on client-side for immediate repeated access
       if (useClientCache && CacheManager.isAvailable()) {
         CacheManager.set(CACHE_TYPES.SEARCH_RESULTS, result, cacheKey);
       }
@@ -89,8 +84,6 @@ class ClipService {
 
   /**
    * Check server health for a specific model
-   * @param {string} model - The model to check
-   * @returns {Promise<Object>} Health status
    */
   static async checkServerHealth(model = "CLIP") {
     const modelConfig = AI_MODELS[model];
@@ -99,8 +92,12 @@ class ClipService {
     }
 
     try {
-      // Use regular fetch for client-side requests
-      const response = await fetch(`${modelConfig.url}/health/${model.toLowerCase()}`);
+      // ✅ ДОДАЙТЕ NGROK HEADER
+      const response = await fetch(`${modelConfig.url}/health/${model.toLowerCase()}`, {
+        headers: {
+          "ngrok-skip-browser-warning": "true", // 🔥 КЛЮЧОВЕ ВИПРАВЛЕННЯ
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -115,12 +112,15 @@ class ClipService {
 
   /**
    * Get all server health statuses
-   * @returns {Promise<Object>} Health status for all models (transformed to object format)
    */
   static async getAllHealthStatuses() {
     try {
-      // Use regular fetch for client-side requests
-      const response = await fetch(`${UNIFIED_SERVER_URL}/health`);
+      // ✅ ДОДАЙТЕ NGROK HEADER
+      const response = await fetch(`${UNIFIED_SERVER_URL}/health`, {
+        headers: {
+          "ngrok-skip-browser-warning": "true", // 🔥 КЛЮЧОВЕ ВИПРАВЛЕННЯ
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -128,12 +128,10 @@ class ClipService {
 
       const data = await response.json();
 
-      // Transform the array of models to an object format expected by ModelSelector
       const modelHealth = {};
 
       if (data.models && Array.isArray(data.models)) {
         data.models.forEach((model) => {
-          // Map server model names to client model names
           let clientModelName;
           switch (model.name.toLowerCase()) {
             case "clip":
@@ -166,17 +164,10 @@ class ClipService {
 
   /**
    * Search for products using selected AI model and return formatted results
-   * @param {string} query - The search query text
-   * @param {string} model - The model to use
-   * @param {number} topK - Number of results
-   * @param {boolean} useClientCache - Whether to use client-side cache (default: true)
-   * @returns {Promise<Object>} Formatted search results
    */
   static async searchProductsV2(query, model = "CLIP", topK = 10, useClientCache = true) {
-    // Generate cache key for client-side cache
     const cacheKey = CacheManager.generateSearchKey(query, model, { topK });
 
-    // Try to get from client-side cache first (faster for repeated searches)
     if (useClientCache && CacheManager.isAvailable()) {
       const cached = CacheManager.get(CACHE_TYPES.SEARCH_RESULTS, cacheKey);
       if (cached) {
@@ -189,14 +180,14 @@ class ClipService {
     }
 
     try {
-      // Convert model name to lowercase for server compatibility
       const serverModel = model.toLowerCase();
 
-      // Use regular fetch for client-side requests
+      // ✅ ДОДАЙТЕ NGROK HEADER
       const response = await fetch(`${UNIFIED_SERVER_URL}/search-products`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true", // 🔥 КЛЮЧОВЕ ВИПРАВЛЕННЯ
         },
         body: JSON.stringify({
           query: query,
@@ -211,7 +202,6 @@ class ClipService {
 
       const data = await response.json();
 
-      // Convert API products to client format
       const products =
         data.products?.map((product) => ({
           id: product.id || product.filename,
@@ -234,7 +224,6 @@ class ClipService {
         cacheType: "server",
       };
 
-      // Cache the result on client-side for immediate repeated access
       if (useClientCache && CacheManager.isAvailable()) {
         CacheManager.set(CACHE_TYPES.SEARCH_RESULTS, result, cacheKey);
       }
@@ -247,23 +236,14 @@ class ClipService {
   }
 
   /**
-   * Search for products using selected AI model (legacy method - kept for backward compatibility)
-   * @param {string} query - The search query text
-   * @param {Array} products - Local products array (ignored in new version)
-   * @param {string} model - The model to use (e.g., 'CLIP', 'EVA02')
-   * @param {number} topK - Number of top results to return
-   * @returns {Promise<Array>} Array of products with similarity scores
+   * Search for products using selected AI model (legacy method)
    */
   static async searchProducts(query, products, model = "CLIP", topK = 10) {
-    // Use the new database-backed search method with caching enabled
     return this.searchProductsV2(query, model, topK, true);
   }
 
   /**
    * Upload an image to the server and generate embeddings
-   * @param {File} imageFile - The image file to upload
-   * @param {Array<string>} models - Models to generate embeddings for (optional)
-   * @returns {Promise<Object>} Upload result with embeddings
    */
   static async uploadImage(imageFile, models = ["CLIP"]) {
     try {
@@ -271,11 +251,13 @@ class ClipService {
       formData.append("image", imageFile);
       formData.append("models", JSON.stringify(models));
 
-      // Don't cache upload requests
+      // ✅ ДОДАЙТЕ NGROK HEADER (для FormData немає Content-Type)
       const response = await fetch(`${UNIFIED_SERVER_URL}/upload-image`, {
         method: "POST",
+        headers: {
+          "ngrok-skip-browser-warning": "true", // 🔥 КЛЮЧОВЕ ВИПРАВЛЕННЯ
+        },
         body: formData,
-        // No caching for uploads
         cache: "no-store",
       });
 
@@ -293,12 +275,15 @@ class ClipService {
 
   /**
    * Get available images from the server
-   * @returns {Promise<Array>} Array of available images
    */
   static async getImages() {
     try {
-      // Use regular fetch for client-side requests
-      const response = await fetch(`${UNIFIED_SERVER_URL}/images`);
+      // ✅ ДОДАЙТЕ NGROK HEADER
+      const response = await fetch(`${UNIFIED_SERVER_URL}/images`, {
+        headers: {
+          "ngrok-skip-browser-warning": "true", // 🔥 КЛЮЧОВЕ ВИПРАВЛЕННЯ
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -314,12 +299,15 @@ class ClipService {
 
   /**
    * Get database statistics
-   * @returns {Promise<Object>} Database stats
    */
   static async getDatabaseStats() {
     try {
-      // Use regular fetch for client-side requests
-      const response = await fetch(`${UNIFIED_SERVER_URL}/stats`);
+      // ✅ ДОДАЙТЕ NGROK HEADER
+      const response = await fetch(`${UNIFIED_SERVER_URL}/stats`, {
+        headers: {
+          "ngrok-skip-browser-warning": "true", // 🔥 КЛЮЧОВЕ ВИПРАВЛЕННЯ
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -334,15 +322,15 @@ class ClipService {
 
   /**
    * Generate embeddings for all models
-   * @returns {Promise<Object>} Generation result
    */
   static async generateEmbeddings() {
     try {
-      // Don't cache generation requests
+      // ✅ ДОДАЙТЕ NGROK HEADER
       const response = await fetch(`${UNIFIED_SERVER_URL}/generate-embeddings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true", // 🔥 КЛЮЧОВЕ ВИПРАВЛЕННЯ
         },
         cache: "no-store",
       });
@@ -360,13 +348,9 @@ class ClipService {
 
   /**
    * Revalidate cache tags (for use in Server Actions)
-   * @param {Array<string>} tags - Cache tags to revalidate
    */
   static async revalidateCacheTags(tags) {
-    // This would be called from a Server Action
-    // Example usage: ClipService.revalidateCacheTags(['products', 'ai-search'])
     if (typeof window === "undefined") {
-      // Server-side only
       const { revalidateTag } = await import("next/cache");
       tags.forEach((tag) => revalidateTag(tag));
     }

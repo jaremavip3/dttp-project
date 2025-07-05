@@ -25,14 +25,14 @@ export default function Footer() {
 
   return (
     <footer className="bg-gray-50 border-t border-gray-200 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           {/* Brand */}
-          <div className="md:col-span-1">
-            <Link href="/" className="font-bold text-xl text-gray-900 block mb-4">
+          <div className="sm:col-span-2 md:col-span-1">
+            <Link href="/" className="font-bold text-xl text-gray-900 block mb-3 sm:mb-4">
               StyleAI
             </Link>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-gray-600 text-sm mb-3 sm:mb-4 leading-relaxed">
               Discover fashion with AI-powered search. Find exactly what you're looking for.
             </p>
             <div className="flex space-x-4">
@@ -68,7 +68,7 @@ export default function Footer() {
           {/* Links */}
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
-              <h3 className="font-medium text-gray-900 mb-4">{category}</h3>
+              <h3 className="font-medium text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">{category}</h3>
               <ul className="space-y-2">
                 {links.map((link) => (
                   <li key={link.name}>
@@ -82,10 +82,10 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="border-t border-gray-200 mt-8 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
+        <div className="border-t border-gray-200 mt-6 sm:mt-8 pt-6 sm:pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-gray-600 text-sm">© 2025 StyleAI. All rights reserved.</p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
+            <div className="flex flex-wrap justify-center md:justify-end space-x-4 sm:space-x-6">
               <span className="text-gray-600 text-sm">Powered by AI</span>
               <span className="text-gray-600 text-sm">Secure Payments</span>
               <span className="text-gray-600 text-sm">Free Shipping</span>

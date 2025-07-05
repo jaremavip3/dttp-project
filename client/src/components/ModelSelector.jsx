@@ -48,14 +48,14 @@ export default function ModelSelector({ selectedModel, onModelChange, className 
         <button
           onClick={checkModelHealth}
           disabled={isChecking}
-          className="text-xs text-gray-500 hover:text-gray-700 disabled:text-gray-400 transition-colors"
+          className="text-xs text-gray-500 hover:text-gray-700 disabled:text-gray-400 transition-colors p-1 touch-manipulation"
         >
           {isChecking ? "..." : "↻"}
         </button>
       </div>
 
       <div className="flex justify-center">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-sm">
           {Object.entries(AI_MODELS).map(([key, model]) => {
             const isSelected = selectedModel === key;
             const health = modelHealth[key];
@@ -67,9 +67,9 @@ export default function ModelSelector({ selectedModel, onModelChange, className 
                 onClick={() => onModelChange(key)}
                 disabled={!isHealthy}
                 className={`
-                  w-40
-                  relative p-2.5 rounded-lg text-left transition-all duration-200
-                  backdrop-blur-sm border
+                  w-full
+                  relative p-3 sm:p-3 rounded-lg text-left transition-all duration-200
+                  backdrop-blur-sm border touch-manipulation
                   ${
                     isSelected
                       ? "bg-blue-50/80 border-blue-200/60 shadow-sm"

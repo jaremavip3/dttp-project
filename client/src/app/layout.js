@@ -22,6 +22,7 @@ export const metadata = {
     "Discover fashion with AI-powered semantic search. Find exactly what you're looking for with natural language search.",
   keywords: "fashion, AI search, clothing, e-commerce, style, CLIP, semantic search",
   authors: [{ name: "StyleAI Team" }],
+  viewport: "width=device-width, initial-scale=1",
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -46,6 +47,7 @@ export default function RootLayout({ children }) {
       >
         <Navbar />
         <main className="flex-1">{children}</main>
+        <Footer />
       </body>
     </html>
   );

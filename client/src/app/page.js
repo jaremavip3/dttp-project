@@ -86,16 +86,16 @@ export default function Home() {
         <>
           {/* Featured Products */}
           {featuredProducts.length > 0 && (
-            <div className="py-16 px-4">
+            <div className="py-12 sm:py-16 px-4">
               <div className="max-w-6xl mx-auto">
-                <div className="text-center mb-12">
-                  <h2 className="text-3xl font-light text-gray-900 mb-4">Featured Products</h2>
-                  <p className="text-gray-600">Handpicked favorites from our collection</p>
+                <div className="text-center mb-8 sm:mb-12">
+                  <h2 className="text-2xl sm:text-3xl font-light text-gray-900 mb-2 sm:mb-4">Featured Products</h2>
+                  <p className="text-gray-600 text-sm sm:text-base">Handpicked favorites from our collection</p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                   {featuredProducts.slice(0, 4).map((product) => (
                     <div key={product.id} className="group cursor-pointer">
-                      <div className="aspect-square relative mb-4 overflow-hidden rounded-lg bg-gray-100">
+                      <div className="aspect-square relative mb-3 sm:mb-4 overflow-hidden rounded-lg bg-gray-100">
                         <Image
                           src={product.image || product.image_url}
                           alt={product.name}
@@ -103,8 +103,10 @@ export default function Home() {
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">{product.name}</h3>
-                      <p className="text-gray-600">${product.price}</p>
+                      <h3 className="text-sm sm:text-lg font-medium text-gray-900 mb-1 sm:mb-2 line-clamp-2">
+                        {product.name}
+                      </h3>
+                      <p className="text-gray-600 text-sm sm:text-base">${product.price}</p>
                     </div>
                   ))}
                 </div>
@@ -117,16 +119,16 @@ export default function Home() {
 
           {/* Best Sellers */}
           {bestSellers.length > 0 && (
-            <div className="py-16 px-4">
+            <div className="py-12 sm:py-16 px-4">
               <div className="max-w-6xl mx-auto">
-                <div className="text-center mb-12">
-                  <h2 className="text-3xl font-light text-gray-900 mb-4">Best Sellers</h2>
-                  <p className="text-gray-600">Most popular items from our collection</p>
+                <div className="text-center mb-8 sm:mb-12">
+                  <h2 className="text-2xl sm:text-3xl font-light text-gray-900 mb-2 sm:mb-4">Best Sellers</h2>
+                  <p className="text-gray-600 text-sm sm:text-base">Most popular items from our collection</p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                   {bestSellers.slice(0, 4).map((product) => (
                     <div key={product.id} className="group cursor-pointer">
-                      <div className="aspect-square relative mb-4 overflow-hidden rounded-lg bg-gray-100">
+                      <div className="aspect-square relative mb-3 sm:mb-4 overflow-hidden rounded-lg bg-gray-100">
                         <Image
                           src={product.image || product.image_url}
                           alt={product.name}
@@ -134,8 +136,10 @@ export default function Home() {
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">{product.name}</h3>
-                      <p className="text-gray-600">${product.price}</p>
+                      <h3 className="text-sm sm:text-lg font-medium text-gray-900 mb-1 sm:mb-2 line-clamp-2">
+                        {product.name}
+                      </h3>
+                      <p className="text-gray-600 text-sm sm:text-base">${product.price}</p>
                     </div>
                   ))}
                 </div>
@@ -145,16 +149,16 @@ export default function Home() {
 
           {/* New Arrivals */}
           {newArrivals.length > 0 && (
-            <div className="py-16 px-4">
+            <div className="py-12 sm:py-16 px-4">
               <div className="max-w-6xl mx-auto">
-                <div className="text-center mb-12">
-                  <h2 className="text-3xl font-light text-gray-900 mb-4">New Arrivals</h2>
-                  <p className="text-gray-600">Latest additions to our collection</p>
+                <div className="text-center mb-8 sm:mb-12">
+                  <h2 className="text-2xl sm:text-3xl font-light text-gray-900 mb-2 sm:mb-4">New Arrivals</h2>
+                  <p className="text-gray-600 text-sm sm:text-base">Latest additions to our collection</p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                   {newArrivals.slice(0, 4).map((product) => (
                     <div key={product.id} className="group cursor-pointer">
-                      <div className="aspect-square relative mb-4 overflow-hidden rounded-lg bg-gray-100">
+                      <div className="aspect-square relative mb-3 sm:mb-4 overflow-hidden rounded-lg bg-gray-100">
                         <Image
                           src={product.image || product.image_url}
                           alt={product.name}
@@ -162,8 +166,10 @@ export default function Home() {
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">{product.name}</h3>
-                      <p className="text-gray-600">${product.price}</p>
+                      <h3 className="text-sm sm:text-lg font-medium text-gray-900 mb-1 sm:mb-2 line-clamp-2">
+                        {product.name}
+                      </h3>
+                      <p className="text-gray-600 text-sm sm:text-base">${product.price}</p>
                     </div>
                   ))}
                 </div>

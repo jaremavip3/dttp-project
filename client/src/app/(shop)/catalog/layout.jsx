@@ -21,7 +21,7 @@ export default function CatalogLayout({ children }) {
     <FilterContext.Provider value={filterData}>
       <div className="flex">
         <AdvancedFilter onFilterSelect={filterData.handleFilterSelect} activeFilters={filterData.activeFilters} />
-        <div className="flex-1">{children}</div>
+        <div className="flex-1 w-full lg:w-auto">{children}</div>
       </div>
     </FilterContext.Provider>
   );

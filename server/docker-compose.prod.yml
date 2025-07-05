@@ -5,12 +5,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: dttp-ai-server-multimodel
+    container_name: dttp-ai-server-prod
     restart: unless-stopped
     ports:
       - "8000:5000"
     env_file:
-      - .env.multimodel
+      - .env.prod
     volumes:
       # Persist model and embeddings cache
       - model_cache:/app/model_cache
@@ -18,19 +18,19 @@ services:
       - logs:/app/logs
     networks:
       - dttp-network
-    # Increased memory limits for multiple models
+    # Memory limits for large ML models
     deploy:
       resources:
         limits:
-          memory: 12G
+          memory: 8G
         reservations:
-          memory: 6G
+          memory: 4G
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 180s # Longer startup time for multiple models
+      retries: 3
+      start_period: 60s
 
 volumes:
   model_cache:

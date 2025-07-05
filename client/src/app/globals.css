@@ -146,6 +146,73 @@
   --sidebar-ring: oklch(0.553 0.013 58.071);
 }
 
+/* Neon glow effects for search input */
+@keyframes neonPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.3), 0 0 10px rgba(59, 130, 246, 0.2), 0 0 15px rgba(59, 130, 246, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.5), 0 0 16px rgba(59, 130, 246, 0.3), 0 0 24px rgba(59, 130, 246, 0.2);
+  }
+}
+
+@keyframes neonGlow {
+  0% {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.4), 0 0 10px rgba(59, 130, 246, 0.3), 0 0 15px rgba(59, 130, 246, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.6), 0 0 20px rgba(59, 130, 246, 0.4), 0 0 30px rgba(59, 130, 246, 0.3);
+  }
+}
+
+@keyframes sparkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.search-input-glow {
+  transition: all 0.3s ease-in-out;
+}
+
+.search-input-glow:focus {
+  animation: neonGlow 0.5s ease-in-out forwards;
+}
+
+.search-input-searching {
+  animation: neonPulse 1.5s ease-in-out infinite;
+}
+
+.search-input-enhanced {
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4), 0 0 20px rgba(59, 130, 246, 0.2), 0 0 30px rgba(59, 130, 246, 0.1);
+}
+
+.sparkle-animation {
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+/* Dark mode adjustments */
+.dark .search-input-glow:focus {
+  animation: none;
+  box-shadow: 0 0 15px rgba(96, 165, 250, 0.5), 0 0 30px rgba(96, 165, 250, 0.3), 0 0 45px rgba(96, 165, 250, 0.2);
+}
+
+.dark .search-input-searching {
+  animation: none;
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.6), 0 0 24px rgba(96, 165, 250, 0.4), 0 0 36px rgba(96, 165, 250, 0.3);
+}
+
+.dark .search-input-enhanced {
+  box-shadow: 0 0 15px rgba(96, 165, 250, 0.4), 0 0 30px rgba(96, 165, 250, 0.2), 0 0 45px rgba(96, 165, 250, 0.1);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

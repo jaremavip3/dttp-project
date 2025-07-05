@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export default function SearchInputComponent({
   onSearch,
-  placeholder = "Enter your search query...",
+  placeholder = 'Try: "summer vibes", "black and red", "cozy winter"...',
   isLoading = false,
   error = null,
 }) {
@@ -61,6 +61,13 @@ export default function SearchInputComponent({
             )}
           </button>
         </div>
+      </div>
+
+      {/* Help text */}
+      <div className="mt-2 text-center">
+        <p className="text-xs text-gray-500">
+          💡 Try describing styles, colors, or moods: "vintage denim", "elegant evening", "cozy autumn"
+        </p>
       </div>
 
       {error && <p className="mt-2 text-sm text-red-600 text-center px-4">{error}</p>}

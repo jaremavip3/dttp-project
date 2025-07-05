@@ -33,7 +33,7 @@ export default function CatalogPage() {
 
         <SearchInput
           onSearch={handleSearch}
-          placeholder="Search products with AI semantic search..."
+          placeholder='Search by style: "summer vibes", "black and red", "vintage aesthetic"...'
           isLoading={isClipSearching}
           error={clipError}
         />

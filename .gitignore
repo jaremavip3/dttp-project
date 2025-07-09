@@ -48,15 +48,18 @@ test_image.jpg
 *CLEANUP*.md
 *INTEGRATION*.md
 *IMPROVEMENTS*.md
-*TEST*.md
-*STATUS*.md
-*EXPLANATION*.md
-*UPDATE*.md
 
-# Build artifacts
-build/
-dist/
-*.egg-info/
+# Debug directories
+debug-*/
+*test*/
+*-test/
+
+# Unused deployment files
+*.railway.toml
+render.yaml
+deploy-*.sh
+setup-*.sh
+verify-*.sh
 
 # Temporary files
 *.tmp

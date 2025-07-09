@@ -1,6 +1,0 @@
-# Suggested .gitignore cleanup
-# Remove references to unused .env and compose files if present:
-# .env*
-# docker-compose.dfn5b.yml
-# docker-compose.minimal.yml
-# docker-compose.prod.yml

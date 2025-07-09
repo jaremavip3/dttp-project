@@ -1,12 +1,17 @@
-export default function Grid({ children }) {
+import Image from "next/image";
+import { memo } from "react";
+
+const Grid = memo(function Grid({ children }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 p-4">
       {children}
     </div>
   );
-}
+});
 
-export function GridItem({ product }) {
+export default Grid;
+
+export const GridItem = memo(function GridItem({ product }) {
   if (!product) {
     return (
       <div className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
@@ -33,12 +38,15 @@ export function GridItem({ product }) {
     <div className="relative min-w-0">
       <div className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow h-full flex flex-col">
         {/* Product Image */}
-        <div className="aspect-square bg-gray-100 rounded mb-3 sm:mb-4 flex items-center justify-center overflow-hidden">
+        <div className="aspect-square bg-gray-100 rounded mb-3 sm:mb-4 flex items-center justify-center overflow-hidden relative">
           {enhancedProduct.image ? (
-            <img
+            <Image
               src={enhancedProduct.image}
               alt={enhancedProduct.name || "Product"}
-              className="w-full h-full object-cover"
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+              className="object-cover"
+              loading="lazy"
             />
           ) : (
             <span className="text-gray-400 text-xs sm:text-sm">No Image</span>
@@ -69,4 +77,4 @@ export function GridItem({ product }) {
       )}
     </div>
   );
-}
+});

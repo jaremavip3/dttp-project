@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
@@ -48,6 +48,16 @@ export default function Home() {
 
     fetchProducts();
   }, []);
+
+  // Memoize sections to prevent unnecessary re-renders
+  const memoizedSections = useMemo(
+    () => ({
+      featured: featuredProducts,
+      bestSellers: bestSellers,
+      newArrivals: newArrivals,
+    }),
+    [featuredProducts, bestSellers, newArrivals]
+  );
 
   return (
     <div>

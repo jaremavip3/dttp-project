@@ -36,6 +36,9 @@ export const metadata = {
     index: true,
     follow: true,
   },
+  other: {
+    "dns-prefetch": process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
+  },
 };
 
 export default function RootLayout({ children }) {

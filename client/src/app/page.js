@@ -1,14 +1,24 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import CategoryGrid from "@/components/CategoryGrid";
-import Features from "@/components/Features";
-import Testimonials from "@/components/Testimonials";
-import Newsletter from "@/components/Newsletter";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import ProductService from "@/services/productService";
+
+// Lazy load heavy components
+const Features = dynamic(() => import("@/components/Features"), {
+  loading: () => <LoadingSpinner size="large" text="Loading features..." />,
+});
+const Testimonials = dynamic(() => import("@/components/Testimonials"), {
+  loading: () => <LoadingSpinner size="large" text="Loading testimonials..." />,
+});
+const Newsletter = dynamic(() => import("@/components/Newsletter"), {
+  loading: () => <LoadingSpinner size="large" text="Loading newsletter..." />,
+});
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -23,21 +33,38 @@ export default function Home() {
         setLoading(true);
         setError(null);
 
-        // Fetch all sections in parallel
-        const [featuredResponse, bestSellersResponse, newArrivalsResponse] = await Promise.all([
+        // Pre-warm the API connection
+        const warmupPromise = fetch(process.env.NEXT_PUBLIC_API_URL + '/health', {
+          method: 'HEAD',
+        }).catch(() => {}); // Ignore errors
+
+        // Fetch all sections in parallel with optimized error handling
+        const [featuredResponse, bestSellersResponse, newArrivalsResponse] = await Promise.allSettled([
           ProductService.fetchProducts({ per_page: 8 }), // General featured products
           ProductService.fetchBestSellers(8),
           ProductService.fetchNewArrivals(8),
         ]);
 
-        // Convert featured products to client format
-        const convertedFeatured = featuredResponse.products.map((product) =>
-          ProductService.convertToClientProduct(product)
-        );
+        // Handle featured products
+        if (featuredResponse.status === 'fulfilled') {
+          const convertedFeatured = featuredResponse.value.products.map((product) =>
+            ProductService.convertToClientProduct(product)
+          );
+          setFeaturedProducts(convertedFeatured);
+        }
 
-        setFeaturedProducts(convertedFeatured);
-        setBestSellers(bestSellersResponse);
-        setNewArrivals(newArrivalsResponse);
+        // Handle best sellers
+        if (bestSellersResponse.status === 'fulfilled') {
+          setBestSellers(bestSellersResponse.value);
+        }
+
+        // Handle new arrivals
+        if (newArrivalsResponse.status === 'fulfilled') {
+          setNewArrivals(newArrivalsResponse.value);
+        }
+
+        // Wait for warmup to complete
+        await warmupPromise;
       } catch (err) {
         console.error("Error fetching products:", err);
         setError(err.message);
@@ -68,12 +95,7 @@ export default function Home() {
 
       {/* Loading State */}
       {loading && (
-        <div className="py-16 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-900 border-t-transparent mx-auto">
-            <span className="sr-only">Loading...</span>
-          </div>
-          <p className="mt-4 text-gray-600">Loading products...</p>
-        </div>
+        <LoadingSpinner size="large" text="Loading products..." />
       )}
 
       {/* Error State */}

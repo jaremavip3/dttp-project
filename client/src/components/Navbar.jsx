@@ -9,8 +9,8 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigation = [
-    { name: "Home", href: "/" },
-    { name: "Catalog", href: "/catalog" },
+    { name: "Home", href: "/", prefetch: true },
+    { name: "Catalog", href: "/catalog", prefetch: true },
   ];
 
   const toggleMobileMenu = () => {
